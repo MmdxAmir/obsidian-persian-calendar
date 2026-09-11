@@ -1,6 +1,5 @@
-import type { App, EditorSuggestContext } from "obsidian";
+import type { EditorSuggestContext } from "obsidian";
 import type { IRAN_HIJRI_MONTHS } from "src/constants";
-import type { SettingsController } from "src/templates/Setting/SettingsController";
 
 // jalali = هجری شمسی/خورشیدی
 export type TJalali = {
@@ -114,7 +113,6 @@ export type TSetting = {
 
 //? Utility type that extracts the keys of TSetting whose values are assignable to V.
 type KeysOfType<V> = { [K in keyof TSetting]-?: TSetting[K] extends V ? K : never }[keyof TSetting];
-export type BoolKey = KeysOfType<boolean>;
 export type StringKey = KeysOfType<string>;
 
 export type TLocale = "fa" | "en";
@@ -159,8 +157,6 @@ export type TSocialLink = {
 	title: string;
 	icon: string;
 };
-
-export type TPathSuggestMode = "folder" | "file" | "md-file";
 
 export type TCalendarFamily = "gregorian" | "jalali";
 
@@ -211,13 +207,6 @@ export type TValidationResult = {
 	valid: boolean;
 	errors: TValidationError[];
 };
-
-export type SectionContext = {
-	app: App;
-	controller: SettingsController;
-};
-
-export type SectionRenderer = (ctx: SectionContext, containerEl: HTMLElement) => void;
 
 export type TWeekCalculator = {
 	getWeekNumber(date: Date, weekStart?: TWeekStart): { jy: number; weekNumber: number };

@@ -1,17 +1,62 @@
-.persian-calendar__setting-banner {
-	border: 2px dashed var(--persian-calendar-color-primary);
-	border-radius: 10px;
-	margin-bottom: 19px;
-	padding: 10px 0;
+.persian-calendar-banner {
+	display: block;
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.persian-calendar-banner .setting-item-info {
+	display: none;
+}
+
+.persian-calendar-banner .setting-item-control {
+	display: block;
+	width: 100%;
+}
+
+.persian-calendar-banner-title {
+	margin-bottom: 10px;
+	font-weight: 600;
+}
+
+.persian-calendar-banner-content {
+	position: relative;
+	overflow: hidden;
+
+	width: 100%;
+	box-sizing: border-box;
 	text-align: center;
+
+	padding: 16px 20px;
+
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 10px;
 }
 
-.persian-calendar__setting-banner .setting-item.setting-item-heading {
-	border: none;
-	justify-content: center;
-	padding: 0 0 8px;
+.persian-calendar-banner-content::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 50%;
+	height: 100%;
+
+	background: linear-gradient(90deg, transparent, var(--background-modifier-hover), transparent);
+
+	animation: persian-calendar-banner-shimmer 4s ease-in-out infinite;
+	pointer-events: none;
 }
 
-.persian-calendar__setting-input--invalid {
-	border-color: var(--persian-calendar-color-red);
+@keyframes persian-calendar-banner-shimmer {
+	0% {
+		left: -100%;
+	}
+
+	83% {
+		left: 150%;
+	}
+
+	100% {
+		left: 150%;
+	}
 }
