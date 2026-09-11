@@ -3,7 +3,6 @@ import { PluginSettingTab, Setting } from "obsidian";
 import SocialLinks from "src/components/SocialLinks";
 import { getDirection, onLocalChange, t } from "src/languages";
 import type PersianCalendarPlugin from "src/main";
-import type { TSetting } from "src/types";
 import { addClasses } from "src/utils/dom";
 import { getEventSettings } from "./sections/EventSection";
 import { getExtraCalendarSettings } from "./sections/ExtraCalendarSection";
@@ -12,7 +11,7 @@ import { getHolidaySettings } from "./sections/HolidaySection";
 import { getNameSettings } from "./sections/NameSection";
 import { getPathSettings } from "./sections/PathSection";
 import { getTemplateSettings } from "./sections/TemplateSection";
-import { createSettingChangeHandler } from "./settingEffects";
+import { createSettingChangeHandler, getNestedValue } from "./settingEffects";
 
 export default class CalendarSettingTab extends PluginSettingTab {
 	readonly plugin: PersianCalendarPlugin;
@@ -27,7 +26,7 @@ export default class CalendarSettingTab extends PluginSettingTab {
 	}
 
 	getControlValue(key: string): unknown {
-		return this.plugin.setting[key as keyof TSetting];
+		return getNestedValue(this.plugin.setting, key);
 	}
 
 	private renderBanner(setting: Setting): void {

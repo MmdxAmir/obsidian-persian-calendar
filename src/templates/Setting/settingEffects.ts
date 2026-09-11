@@ -45,6 +45,35 @@ const SETTING_EFFECTS: Partial<Record<keyof TSetting, EffectKind>> = {
 	showSunniEvents: "refresh-immediate",
 };
 
+export function getNestedValue(obj: unknown, path: string): unknown {
+	return path.split(".").reduce((current, key) => {
+		if (current === null || typeof current !== "object") {
+			return undefined;
+		}
+
+		return (current as Record<string, unknown>)[key];
+	}, obj);
+}
+
+export function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): void {
+	const keys = path.split(".");
+	const lastKey = keys.pop();
+
+	if (!lastKey) return;
+
+	let current = obj;
+
+	for (const key of keys) {
+		if (current[key] === null || typeof current[key] !== "object" || Array.isArray(current[key])) {
+			current[key] = {};
+		}
+
+		current = current[key] as Record<string, unknown>;
+	}
+
+	current[lastKey] = value;
+}
+
 export function createSettingChangeHandler(
 	plugin: PersianCalendarPlugin,
 	onLocaleChange: () => void,
@@ -53,7 +82,8 @@ export function createSettingChangeHandler(
 
 	return async function applySettingChange(key: string, value: unknown): Promise<void> {
 		const settingKey = key as keyof TSetting;
-		plugin.setting[settingKey] = value as never;
+
+		setNestedValue(plugin.setting as unknown as Record<string, unknown>, key, value);
 
 		if (settingKey === "language") {
 			setLocal(value as TLocale);
@@ -68,6 +98,7 @@ export function createSettingChangeHandler(
 
 			debounceTimer = window.setTimeout(() => {
 				debounceTimer = undefined;
+
 				void plugin.saveSetting().then(() => {
 					plugin.refreshViews();
 				});

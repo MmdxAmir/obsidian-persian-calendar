@@ -70,6 +70,16 @@ export type TBoolSettingKeys = Extract<
 	| "openDailyNoteOnStartup"
 >;
 
+export type TWeekDays = {
+	saturday: boolean;
+	sunday: boolean;
+	monday: boolean;
+	tuesday: boolean;
+	wednesday: boolean;
+	thursday: boolean;
+	friday: boolean;
+};
+
 export type TSetting = {
 	lastSeenVersion?: string;
 	legacyPathPatternsMigrated?: boolean;
@@ -85,7 +95,7 @@ export type TSetting = {
 	showSeasonalNotes: boolean;
 	// show holidays
 	showHolidays: boolean;
-	weekendDays: "thursday-friday" | "friday" | "friday-saturday";
+	weekendDays: TWeekDays;
 	// show dates
 	hijriBase: THijriBase;
 	showGeorgianDates: boolean;
