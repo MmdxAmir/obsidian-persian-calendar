@@ -30,7 +30,13 @@
 		"url": "https://github.com/karfekr/obsidian-persian-calendar/issues"
 	},
 	"homepage": "https://github.com/karfekr/obsidian-persian-calendar#readme",
-	"keywords": ["obsidian", "plugin", "persian", "jalali", "calendar"],
+	"keywords": [
+		"obsidian",
+		"plugin",
+		"persian",
+		"jalali",
+		"calendar"
+	],
 	"scripts": {
 		"lint": "biome check --write .",
 		"clean": "node scripts/clean.mjs",
@@ -56,6 +62,7 @@
 		"postcss": "^8.5.28",
 		"simple-git-hooks": "^2.14.0",
 		"tslib": "2.8.1",
+		"tsx": "^4.23.13",
 		"typescript": "^7.0.2",
 		"vitest": "^4.1.11"
 	},
