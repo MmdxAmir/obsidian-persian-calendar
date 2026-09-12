@@ -11,7 +11,6 @@ import {
 	jalaliToGregorian,
 	todayTehran,
 } from "src/utils/dateUtils";
-import { addClasses } from "src/utils/dom";
 import { extractDayFormat, toDayFormat, toFaNumber } from "src/utils/formatters";
 
 export default class DatePicker extends Modal {
@@ -100,8 +99,9 @@ export default class DatePicker extends Modal {
 		const { contentEl } = this;
 		contentEl.replaceChildren();
 
-		const rootContainer = contentEl.createDiv();
-		addClasses(rootContainer, "persian-calendar__datepicker");
+		const rootContainer = contentEl.createDiv({
+			cls: "persian-calendar__datepicker",
+		});
 		rootContainer.setAttribute("dir", "rtl");
 
 		this.renderHeader(rootContainer);
@@ -253,40 +253,41 @@ export default class DatePicker extends Modal {
 	}
 
 	private renderFooter(container: HTMLElement) {
-		const footer = document.createElement("div");
-		addClasses(footer, "persian-calendar__datepicker-footer");
-		container.appendChild(footer);
+		const footer = container.createDiv({
+			cls: "persian-calendar__datepicker-footer",
+		});
 
-		const toggle = document.createElement("div");
-		addClasses(toggle, "persian-calendar__output-toggle");
-		footer.appendChild(toggle);
+		const toggle = footer.createDiv({
+			cls: "persian-calendar__output-toggle",
+		});
 
-		const jalaliOption = document.createElement("div");
-		addClasses(
-			jalaliOption,
-			`persian-calendar__output-option ${this.outputMode === "jalali" ? "active" : ""}`,
-		);
-		jalaliOption.textContent = t("modal.datePicker.jalali");
-		toggle.appendChild(jalaliOption);
+		const jalaliOption = toggle.createDiv({
+			cls: ["persian-calendar__output-option", ...(this.outputMode === "jalali" ? ["active"] : [])],
+			text: t("modal.datePicker.jalali"),
+		});
+
 		jalaliOption.onclick = () => {
 			this.setOutputMode("jalali");
 		};
 
-		const gregorianOption = document.createElement("div");
-		addClasses(
-			gregorianOption,
-			`persian-calendar__output-option ${this.outputMode === "gregorian" ? "active" : ""}`,
-		);
-		gregorianOption.textContent = t("modal.datePicker.gregorian");
-		toggle.appendChild(gregorianOption);
+		const gregorianOption = toggle.createDiv({
+			cls: [
+				"persian-calendar__output-option",
+				...(this.outputMode === "gregorian" ? ["active"] : []),
+			],
+			text: t("modal.datePicker.gregorian"),
+		});
+
 		gregorianOption.onclick = () => {
 			this.setOutputMode("gregorian");
 		};
 
-		const currentButton = document.createElement("button");
-		currentButton.textContent = t("current");
-		addClasses(currentButton, "persian-calendar__go-current");
-		footer.appendChild(currentButton);
+		const currentButton = footer.createEl("button", {
+			cls: "persian-calendar__go-current",
+			text: t("current"),
+			type: "button",
+		});
+
 		currentButton.onclick = () => {
 			this.goToCurrent();
 		};

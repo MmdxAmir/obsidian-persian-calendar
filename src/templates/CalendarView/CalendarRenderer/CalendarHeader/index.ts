@@ -5,7 +5,6 @@ import type CalendarState from "src/templates/CalendarView/CalendarState";
 import type { TSetting } from "src/types";
 import { jalaliMonthToRangeDash } from "src/utils/dashUtils";
 import { jalaliMonthName } from "src/utils/dateUtils";
-import { addClasses } from "src/utils/dom";
 import { toFaNumber } from "src/utils/formatters";
 
 import type CalendarNavigation from "../CalendarNavigation";
@@ -19,23 +18,23 @@ export default class CalendarHeaderRender {
 	) {}
 
 	public render(containerEl: HTMLElement) {
-		const headerEl = document.createElement("div");
-		addClasses(headerEl, "persian-calendar__header");
-		containerEl.appendChild(headerEl);
+		const headerEl = containerEl.createDiv({
+			cls: "persian-calendar__header",
+		});
 
 		const { jYearState, jMonthState } = this.calendarState.getJState();
 
-		const additionalCalendarStateEl = document.createElement("div");
-		addClasses(additionalCalendarStateEl, "persian-calendar__additional-calendar-state");
-		headerEl.appendChild(additionalCalendarStateEl);
+		const additionalCalendarStateEl = headerEl.createDiv({
+			cls: "persian-calendar__additional-calendar-state",
+		});
 
-		const hijriMonthYearEl = document.createElement("div");
-		addClasses(hijriMonthYearEl, "persian-calendar__hmonth-hyear");
-		additionalCalendarStateEl.appendChild(hijriMonthYearEl);
+		const hijriMonthYearEl = additionalCalendarStateEl.createDiv({
+			cls: "persian-calendar__hmonth-hyear",
+		});
 
-		const georgianMonthYearEl = document.createElement("div");
-		addClasses(georgianMonthYearEl, "persian-calendar__gmonth-gyear");
-		additionalCalendarStateEl.appendChild(georgianMonthYearEl);
+		const georgianMonthYearEl = additionalCalendarStateEl.createDiv({
+			cls: "persian-calendar__gmonth-gyear",
+		});
 
 		if (this.setting.showGeorgianDates) {
 			const georgianMonthRange = jalaliMonthToRangeDash(jYearState, jMonthState, {
@@ -54,34 +53,33 @@ export default class CalendarHeaderRender {
 			hijriMonthYearEl.textContent = hijriMonthRange;
 		}
 
-		const stateControlEl = document.createElement("div");
-		addClasses(stateControlEl, "persian-calendar__state-control");
-		headerEl.appendChild(stateControlEl);
+		const stateControlEl = headerEl.createDiv({
+			cls: "persian-calendar__state-control",
+		});
 
-		const jalaliStateEl = document.createElement("div");
-		addClasses(jalaliStateEl, "persian-calendar__jalali-state");
-		stateControlEl.appendChild(jalaliStateEl);
+		const jalaliStateEl = stateControlEl.createDiv({
+			cls: "persian-calendar__jalali-state",
+		});
 
-		const monthEl = document.createElement("span");
-		addClasses(monthEl, "persian-calendar__jmonth");
-		jalaliStateEl.appendChild(monthEl);
-		if (this.setting.language === "fa") {
-			monthEl.classList.add("persian-calendar__jmonth--fa");
-		} else {
-			monthEl.classList.add("persian-calendar__jmonth--en");
-		}
+		const monthEl = jalaliStateEl.createSpan({
+			cls: [
+				"persian-calendar__jmonth",
+				this.setting.language === "fa"
+					? "persian-calendar__jmonth--fa"
+					: "persian-calendar__jmonth--en",
+			],
+		});
 
-		const yearEl = document.createElement("span");
-		addClasses(yearEl, "persian-calendar__jyear");
-		jalaliStateEl.appendChild(yearEl);
-		if (this.setting.language === "fa") {
-			yearEl.classList.add("persian-calendar__jyear--fa");
-		} else {
-			yearEl.classList.add("persian-calendar__jyear--en");
-		}
+		const yearEl = jalaliStateEl.createSpan({
+			cls: [
+				"persian-calendar__jyear",
+				this.setting.language === "fa"
+					? "persian-calendar__jyear--fa"
+					: "persian-calendar__jyear--en",
+			],
+			text: this.setting.language === "fa" ? toFaNumber(jYearState) : String(jYearState),
+		});
 
-		yearEl.textContent =
-			this.setting.language === "fa" ? toFaNumber(jYearState) : String(jYearState);
 		yearEl.addEventListener("click", (e) => {
 			e.stopPropagation();
 			void this.notesService.openOrCreateYearlyNote(jYearState);
@@ -89,35 +87,39 @@ export default class CalendarHeaderRender {
 
 		const monthName = jalaliMonthName(jMonthState, this.setting.language);
 		monthEl.textContent = monthName;
+
 		monthEl.addEventListener("click", (e) => {
 			e.stopPropagation();
 			void this.notesService.openOrCreateMonthlyNote(jYearState, jMonthState);
 		});
 
-		const navContainerEl = document.createElement("div");
-		addClasses(navContainerEl, "persian-calendar__nav-container");
-		stateControlEl.appendChild(navContainerEl);
+		const navContainerEl = stateControlEl.createDiv({
+			cls: "persian-calendar__nav-container",
+		});
 
-		const prevMonthArrow = document.createElement("span");
-		addClasses(prevMonthArrow, "persian-calendar__arrow");
-		navContainerEl.appendChild(prevMonthArrow);
+		const prevMonthArrow = navContainerEl.createSpan({
+			cls: "persian-calendar__arrow",
+		});
 		setIcon(prevMonthArrow, "square-chevron-right");
+
 		prevMonthArrow.addEventListener("click", () => {
 			this.navigation.changeMonth("prev");
 		});
 
-		const currentButton = document.createElement("span");
-		addClasses(currentButton, "persian-calendar__go-current");
-		navContainerEl.appendChild(currentButton);
-		currentButton.textContent = t("current");
+		const currentButton = navContainerEl.createSpan({
+			cls: "persian-calendar__go-current",
+			text: t("current"),
+		});
+
 		currentButton.addEventListener("click", () => {
 			void this.navigation.goToToday();
 		});
 
-		const nextMonthArrow = document.createElement("span");
-		addClasses(nextMonthArrow, "persian-calendar__arrow");
-		navContainerEl.appendChild(nextMonthArrow);
+		const nextMonthArrow = navContainerEl.createSpan({
+			cls: "persian-calendar__arrow",
+		});
 		setIcon(nextMonthArrow, "square-chevron-left");
+
 		nextMonthArrow.addEventListener("click", () => {
 			this.navigation.changeMonth("next");
 		});

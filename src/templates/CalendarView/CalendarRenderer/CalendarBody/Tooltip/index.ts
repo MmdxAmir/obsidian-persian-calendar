@@ -1,7 +1,6 @@
 import { Platform } from "obsidian";
 import type { EventType } from "persian-holidays";
 import type { TLocale } from "src/types";
-import { addClasses } from "src/utils/dom";
 
 export default class Tooltip {
 	private tooltipWrapperSelector = ".persian-calendar--tooltip-wrapper";
@@ -16,9 +15,9 @@ export default class Tooltip {
 		let wrapper = activeDocument.querySelector<HTMLElement>(this.tooltipWrapperSelector);
 
 		if (!wrapper) {
-			wrapper = activeDocument.createElement("div");
-			addClasses(wrapper, "persian-calendar persian-calendar--tooltip-wrapper");
-			activeDocument.body.appendChild(wrapper);
+			wrapper = activeDocument.body.createDiv({
+				cls: "persian-calendar persian-calendar--tooltip-wrapper",
+			});
 		}
 
 		const dir = local === "fa" ? "rtl" : "ltr";
@@ -27,9 +26,9 @@ export default class Tooltip {
 		let tooltip = wrapper.querySelector<HTMLElement>(this.tooltipSelector);
 
 		if (!tooltip) {
-			tooltip = activeDocument.createElement("div");
-			addClasses(tooltip, "persian-calendar__tooltip");
-			wrapper.appendChild(tooltip);
+			tooltip = wrapper.createDiv({
+				cls: "persian-calendar__tooltip",
+			});
 		}
 
 		return { wrapper, tooltip };
@@ -47,10 +46,10 @@ export default class Tooltip {
 				cls.push("persian-calendar__day--holiday");
 			}
 
-			const eventEl = activeDocument.createElement("div");
-			addClasses(eventEl, cls);
-			eventEl.textContent = event.title[local];
-			tooltip.appendChild(eventEl);
+			tooltip.createDiv({
+				cls,
+				text: event.title[local],
+			});
 		}
 
 		let x: number | undefined;

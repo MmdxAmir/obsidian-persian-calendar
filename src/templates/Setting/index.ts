@@ -3,7 +3,6 @@ import { PluginSettingTab, Setting } from "obsidian";
 import SocialLinks from "src/components/SocialLinks";
 import { getDirection, onLocalChange, t } from "src/languages";
 import type PersianCalendarPlugin from "src/main";
-import { addClasses } from "src/utils/dom";
 import { getEventSettings } from "./sections/EventSection";
 import { getExtraCalendarSettings } from "./sections/ExtraCalendarSection";
 import { getGeneralSettings } from "./sections/GeneralSection";
@@ -56,7 +55,7 @@ export default class CalendarSettingTab extends PluginSettingTab {
 				render: (setting: Setting) => {
 					setting.settingEl.empty();
 
-					addClasses(this.containerEl, "persian-calendar");
+					this.containerEl.addClass("persian-calendar");
 					this.containerEl.style.direction = getDirection();
 
 					this.renderBanner(new Setting(setting.settingEl));

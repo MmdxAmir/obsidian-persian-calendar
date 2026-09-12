@@ -6,7 +6,6 @@ import type { NoteService } from "src/services";
 import type CalendarState from "src/templates/CalendarView/CalendarState";
 import type { TLocale, TSetting } from "src/types";
 import { jalaliToSeason } from "src/utils/dateUtils";
-import { addClasses } from "src/utils/dom";
 import { dateToEvents } from "src/utils/eventUtils";
 import { toArNumber, toFaNumber } from "src/utils/formatters";
 
@@ -36,9 +35,9 @@ export default class CalendarBodyRender {
 	}
 
 	public renderSeasonalNotesRow(containerEl: HTMLElement, local: TLocale = "fa") {
-		const seasonsRow = document.createElement("div");
-		addClasses(seasonsRow, "persian-calendar__seasons-row");
-		containerEl.appendChild(seasonsRow);
+		const seasonsRow = containerEl.createDiv({
+			cls: "persian-calendar__seasons-row",
+		});
 
 		const { jYearState, jMonthState } = this.calendarState.getJState();
 
@@ -48,19 +47,16 @@ export default class CalendarBodyRender {
 		const seasons = SEASONS_NAME[local];
 
 		for (let seasonNumber = 1; seasonNumber <= 4; seasonNumber++) {
-			const seasonEl = document.createElement("div");
-			addClasses(
-				seasonEl,
-				`persian-calendar__season${
-					seasonNumber === seasonState ? " persian-calendar__season--current" : ""
-				}`,
-			);
-			seasonsRow.appendChild(seasonEl);
-
-			seasonEl.textContent = seasons[seasonNumber];
+			const seasonEl = seasonsRow.createDiv({
+				cls: [
+					"persian-calendar__season",
+					...(seasonNumber === seasonState ? ["persian-calendar__season--current"] : []),
+				],
+				text: seasons[seasonNumber],
+			});
 
 			if (!seasonsWithNotes.includes(seasonNumber)) {
-				seasonEl.classList.add("persian-calendar__season--no-note");
+				seasonEl.addClass("persian-calendar__season--no-note");
 			}
 
 			seasonEl.addEventListener("click", () => {
@@ -72,13 +68,14 @@ export default class CalendarBodyRender {
 	private renderWeekNumbers(contentEl: HTMLElement, jalaliDate: { jy: number; jm: number }) {
 		contentEl.querySelector(".persian-calendar__week-numbers")?.remove();
 
-		const weekNumbersEl = document.createElement("div");
-		addClasses(weekNumbersEl, "persian-calendar__week-numbers");
-		contentEl.appendChild(weekNumbersEl);
+		const weekNumbersEl = contentEl.createDiv({
+			cls: "persian-calendar__week-numbers",
+		});
 
-		const weekHeader = document.createElement("div");
-		addClasses(weekHeader, "persian-calendar__refresh");
-		weekNumbersEl.appendChild(weekHeader);
+		const weekHeader = weekNumbersEl.createDiv({
+			cls: "persian-calendar__refresh",
+		});
+
 		setIcon(weekHeader, "refresh-ccw");
 
 		const iconEl = weekHeader.querySelector("svg");
@@ -100,25 +97,28 @@ export default class CalendarBodyRender {
 		);
 
 		const weeksWithNotesCache = new Map<number, number[]>();
+
 		const getWeeksWithNotes = (weekYear: number) => {
 			let cached = weeksWithNotesCache.get(weekYear);
+
 			if (!cached) {
 				cached = this.notesService.getWeeksWithNotes(weekYear);
 				weeksWithNotesCache.set(weekYear, cached);
 			}
+
 			return cached;
 		};
 
 		for (let i = 0; i < weekNumbers.length; i++) {
 			const { jy: weekYear, weekNumber } = weekNumbers[i];
 
-			const weekEl = document.createElement("div");
-			addClasses(weekEl, "persian-calendar__week-number");
-			weekNumbersEl.appendChild(weekEl);
-			weekEl.textContent = toFaNumber(weekNumber);
+			const weekEl = weekNumbersEl.createDiv({
+				cls: "persian-calendar__week-number",
+				text: toFaNumber(weekNumber),
+			});
 
 			if (!getWeeksWithNotes(weekYear).includes(weekNumber)) {
-				weekEl.classList.add("persian-calendar__no-note");
+				weekEl.addClass("persian-calendar__no-note");
 			}
 
 			weekEl.addEventListener("click", () => {
@@ -128,9 +128,9 @@ export default class CalendarBodyRender {
 	}
 
 	private renderDaysGrid(contentEl: HTMLElement, jalaliDate: { jy: number; jm: number }) {
-		const weekdaysHeader = document.createElement("div");
-		addClasses(weekdaysHeader, "persian-calendar__weekday--container");
-		contentEl.appendChild(weekdaysHeader);
+		const weekdaysHeader = contentEl.createDiv({
+			cls: "persian-calendar__weekday--container",
+		});
 
 		const { jy, jm } = jalaliDate;
 
@@ -139,10 +139,10 @@ export default class CalendarBodyRender {
 			const fullName = weekdays_name[i];
 			const shortName = fullName.charAt(0);
 
-			const headerCell = document.createElement("div");
-			addClasses(headerCell, "persian-calendar__weekday--name");
-			weekdaysHeader.appendChild(headerCell);
-			headerCell.textContent = shortName;
+			weekdaysHeader.createDiv({
+				cls: "persian-calendar__weekday--name",
+				text: shortName,
+			});
 		}
 
 		const daysWithNotesArray = this.notesService.getDaysWithNotes(jy, jm);
@@ -182,34 +182,35 @@ export default class CalendarBodyRender {
 		};
 
 		contentEl.querySelector(".persian-calendar__days")?.remove();
-		const gridEl = document.createElement("div");
-		addClasses(gridEl, "persian-calendar__days");
-		contentEl.appendChild(gridEl);
+
+		const gridEl = contentEl.createDiv({
+			cls: "persian-calendar__days",
+		});
 
 		const activeDate = this.calendarState.getActiveJDate();
 
 		for (const cell of cells) {
-			const dayEl = document.createElement("div");
-			addClasses(dayEl, "persian-calendar__day");
-			gridEl.appendChild(dayEl);
+			const dayEl = gridEl.createDiv({
+				cls: "persian-calendar__day",
+			});
 
-			const persianDateEl = document.createElement("div");
-			addClasses(persianDateEl, "persian-calendar__jalali-day");
-			dayEl.appendChild(persianDateEl);
-			persianDateEl.textContent = toFaNumber(cell.jd);
+			const persianDateEl = dayEl.createDiv({
+				cls: "persian-calendar__jalali-day",
+				text: toFaNumber(cell.jd),
+			});
 
 			if (!cell.isInCurrentMonth) {
-				dayEl.classList.add("persian-calendar__no-current-month");
+				dayEl.addClass("persian-calendar__no-current-month");
 			}
 
 			if (cell.isInCurrentMonth && !daysWithNotes.has(cell.jd)) {
-				dayEl.classList.add("persian-calendar__no-note");
+				dayEl.addClass("persian-calendar__no-note");
 			}
 
 			const { showGeorgianDates, showHijriDates } = this.setting;
 
 			if (!showGeorgianDates && !showHijriDates) {
-				persianDateEl.classList.add("persian-calendar__jalali-day--centered");
+				persianDateEl.addClass("persian-calendar__jalali-day--centered");
 			}
 
 			if (cell.isInCurrentMonth) {
@@ -217,25 +218,27 @@ export default class CalendarBodyRender {
 					const cls = showHijriDates
 						? "persian-calendar__gregorian-day--corner"
 						: "persian-calendar__gregorian-day--center";
-					const georgianDateEl = document.createElement("div");
-					addClasses(georgianDateEl, cls);
-					dayEl.appendChild(georgianDateEl);
-					georgianDateEl.textContent = cell.gregorian.gd.toString();
+
+					dayEl.createDiv({
+						cls,
+						text: cell.gregorian.gd.toString(),
+					});
 				}
 
 				if (showHijriDates) {
 					const cls = showGeorgianDates
 						? "persian-calendar__hijri-day--corner"
 						: "persian-calendar__hijri-day--center";
-					const hijriDateEl = document.createElement("div");
-					addClasses(hijriDateEl, cls);
-					dayEl.appendChild(hijriDateEl);
-					hijriDateEl.textContent = toArNumber(cell.hijri.hd);
+
+					dayEl.createDiv({
+						cls,
+						text: toArNumber(cell.hijri.hd),
+					});
 				}
 			}
 
 			if (cell.isToday) {
-				dayEl.classList.add("persian-calendar__day--current");
+				dayEl.addClass("persian-calendar__day--current");
 			}
 
 			if (
@@ -245,21 +248,22 @@ export default class CalendarBodyRender {
 				cell.jm === activeDate.jm &&
 				cell.jd === activeDate.jd
 			) {
-				dayEl.classList.add("persian-calendar__day--active");
+				dayEl.addClass("persian-calendar__day--active");
 			}
 
 			if (cell.isHolidayInIran || cell.isWeekend) {
-				dayEl.classList.add("persian-calendar__day--holiday");
+				dayEl.addClass("persian-calendar__day--holiday");
+
 				dayEl
 					.querySelectorAll(
 						".persian-calendar__jalali-day, .persian-calendar__gregorian-day--center, .persian-calendar__hijri-day--center",
 					)
 					.forEach((el) => {
-						el.classList.add("persian-calendar__day--holiday");
+						el.addClass("persian-calendar__day--holiday");
 					});
 			}
 
-			dayEl.classList.add("persian-calendar__day-grid");
+			dayEl.addClass("persian-calendar__day-grid");
 
 			dayEl.setAttribute("data-day", cell.jd.toString());
 
