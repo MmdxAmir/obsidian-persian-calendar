@@ -52,8 +52,6 @@ You can use dynamic placeholders to customize the paths and filenames of your ca
 | :---------- | :------- | :----------------------------------- |
 | `jYYYY`     | 1404     | Four-digit Jalali year               |
 | `jYY`       | 04       | Two-digit Jalali year                |
-| `YYYY`      | 2025     | Four-digit Gregorian year            |
-| `YY`        | 25       | Two-digit Gregorian year             |
 | `jQQQQ`     | Autumn   | Full Jalali season name              |
 | `jQQ`       | 03       | Two-digit Jalali season number       |
 | `jQ`        | 3        | Jalali season number                 |
@@ -61,18 +59,21 @@ You can use dynamic placeholders to customize the paths and filenames of your ca
 | `jMMM`      | Aza      | Abbreviated Jalali month name        |
 | `jMM`       | 09       | Two-digit Jalali month number        |
 | `jM`        | 9        | Jalali month number                  |
+| `jDD`       | 05       | Two-digit Jalali day of the month    |
+| `jD`        | 5        | Jalali day of the month              |
+| `YYYY`      | 2025     | Four-digit Gregorian year            |
+| `YY`        | 25       | Two-digit Gregorian year             |
+| `QQQQ`      | Spring   | Full Gregorian quarter name          |
+| `QQQ`       | Spr      | Short Gregorian quarter name         |
+| `QQQ`       | Spr      | Short Gregorian quarter name         |
+| `QQ`        | 01       | Two-digit Gregorian quarter          |
+| `Q`         | 1        | Numeric Gregorian quarter            |
 | `MMMM`      | November | Full Gregorian month name            |
 | `MMM`       | Nov      | Abbreviated Gregorian month name     |
 | `MM`        | 11       | Two-digit Gregorian month number     |
 | `M`         | 11       | Gregorian month number               |
-| `jDD`       | 05       | Two-digit Jalali day of the month    |
-| `jD`        | 5        | Jalali day of the month              |
 | `DD`        | 06       | Two-digit Gregorian day of the month |
 | `D`         | 6        | Gregorian day of the month           |
-| `Q`         | 1        | Numeric Gregorian quarter            |
-| `QQ`        | 01       | Two-digit Gregorian quarter          |
-| `QQQ`       | Spr      | Short Gregorian quarter name         |
-| `QQQQ`      | Spring   | Full Gregorian quarter name          |
 
 </div>
 
