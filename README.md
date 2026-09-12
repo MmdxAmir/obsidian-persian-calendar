@@ -65,7 +65,6 @@ You can use dynamic placeholders to customize the paths and filenames of your ca
 | `YY`        | 25       | Two-digit Gregorian year             |
 | `QQQQ`      | Spring   | Full Gregorian quarter name          |
 | `QQQ`       | Spr      | Short Gregorian quarter name         |
-| `QQQ`       | Spr      | Short Gregorian quarter name         |
 | `QQ`        | 01       | Two-digit Gregorian quarter          |
 | `Q`         | 1        | Numeric Gregorian quarter            |
 | `MMMM`      | November | Full Gregorian month name            |
