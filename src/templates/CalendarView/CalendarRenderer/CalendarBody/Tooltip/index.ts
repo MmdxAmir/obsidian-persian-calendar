@@ -9,7 +9,10 @@ export default class Tooltip {
 	private offsetX = 10;
 	private offsetY = 10;
 
-	private getOrCreateTooltip(local: TLocale): { wrapper: HTMLElement; tooltip: HTMLElement } {
+	private getOrCreateTooltip(local: TLocale): {
+		wrapper: HTMLElement;
+		tooltip: HTMLElement;
+	} {
 		let wrapper = activeDocument.querySelector<HTMLElement>(this.tooltipWrapperSelector);
 
 		if (!wrapper) {
@@ -22,6 +25,7 @@ export default class Tooltip {
 		wrapper.setAttribute("dir", dir);
 
 		let tooltip = wrapper.querySelector<HTMLElement>(this.tooltipSelector);
+
 		if (!tooltip) {
 			tooltip = activeDocument.createElement("div");
 			addClasses(tooltip, "persian-calendar__tooltip");
@@ -31,16 +35,18 @@ export default class Tooltip {
 		return { wrapper, tooltip };
 	}
 
-	public showTooltip(e: MouseEvent | TouchEvent, events: EventType[], local: TLocale) {
+	public showTooltip(e: MouseEvent | TouchEvent, events: EventType[], local: TLocale): void {
 		const { tooltip } = this.getOrCreateTooltip(local);
 
 		tooltip.replaceChildren();
 
 		for (const event of events) {
 			const cls = ["persian-calendar__tooltip-event"];
+
 			if (event.isHolidayInIran) {
 				cls.push("persian-calendar__day--holiday");
 			}
+
 			const eventEl = activeDocument.createElement("div");
 			addClasses(eventEl, cls);
 			eventEl.textContent = event.title[local];
@@ -62,17 +68,26 @@ export default class Tooltip {
 			};
 
 			window.setTimeout(() => {
-				activeDocument.addEventListener("touchstart", hideOnTouch, { once: true });
-				activeDocument.addEventListener("touchend", hideOnTouch, { once: true });
-				activeDocument.addEventListener("touchcancel", hideOnTouch, { once: true });
+				activeDocument.addEventListener("touchstart", hideOnTouch, {
+					once: true,
+				});
+				activeDocument.addEventListener("touchend", hideOnTouch, {
+					once: true,
+				});
+				activeDocument.addEventListener("touchcancel", hideOnTouch, {
+					once: true,
+				});
 			}, 0);
 		}
 
 		if (x === undefined || y === undefined) return;
 
-		tooltip.style.display = "block";
-		tooltip.style.left = "0px";
-		tooltip.style.top = "0px";
+		tooltip.setCssProps({
+			"--persian-calendar-tooltip-left": "0px",
+			"--persian-calendar-tooltip-top": "0px",
+		});
+
+		tooltip.addClass("is-visible");
 
 		const tooltipWidth = tooltip.offsetWidth;
 		const tooltipHeight = tooltip.offsetHeight;
@@ -80,27 +95,36 @@ export default class Tooltip {
 		const viewportHeight = window.innerHeight;
 
 		let left = x - tooltipWidth - this.offsetX;
+
 		if (left < 0) {
 			left = x + this.offsetX;
+
 			if (left + tooltipWidth > viewportWidth) {
 				left = Math.max(0, viewportWidth - tooltipWidth - this.offsetX);
 			}
 		}
 
 		let top = y + this.offsetY;
+
 		if (top + tooltipHeight > viewportHeight + window.scrollY) {
 			top = y - tooltipHeight - this.offsetY;
 		}
 
-		tooltip.style.left = `${left}px`;
-		tooltip.style.top = `${top}px`;
+		tooltip.setCssProps({
+			"--persian-calendar-tooltip-left": `${left}px`,
+			"--persian-calendar-tooltip-top": `${top}px`,
+		});
 	}
 
-	public hideTooltip() {
+	public hideTooltip(): void {
 		const wrapper = activeDocument.querySelector(this.tooltipWrapperSelector);
+
 		if (!wrapper) return;
 
-		const tooltip = wrapper.querySelector(this.tooltipSelector) as HTMLElement;
-		tooltip.style.display = "none";
+		const tooltip = wrapper.querySelector<HTMLElement>(this.tooltipSelector);
+
+		if (!tooltip) return;
+
+		tooltip.removeClass("is-visible");
 	}
 }

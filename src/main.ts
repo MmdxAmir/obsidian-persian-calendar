@@ -139,9 +139,7 @@ export default class PersianCalendarPlugin extends Plugin {
 			const input = field.querySelector<HTMLInputElement>('input[type="date"]');
 			if (!input) return;
 
-			field.style.display = "flex";
-			field.style.alignItems = "center";
-			field.style.gap = "6px";
+			addClasses(field, "persian-calendar__metadata-date");
 
 			const btn = document.createElement("button");
 			addClasses(btn, "persian-calendar__datepicker-button persian-calendar");
