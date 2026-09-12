@@ -18,7 +18,6 @@ function getUmmAlQuraMonthLength(hy: number, hm: number): 29 | 30 {
 
 const iranCalendar = createIranEstehlal(getUmmAlQuraMonthLength);
 
-//! Public Functions
 export function hijriMonthLength(hy: number, hm: number, options?: { base?: THijriBase }): number {
 	const base = options?.base ?? "iran";
 
@@ -92,7 +91,6 @@ export function hijriToGregorian(
 	return iranHijri;
 }
 
-//? --- Main ---
 export const dateToHijri = (
 	date: Date,
 	options?: {

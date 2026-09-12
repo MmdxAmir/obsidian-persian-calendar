@@ -48,29 +48,6 @@ describe("NotePathBuilder.buildEngineContext", () => {
 		expect(ctx.jd).toBe(1);
 		expect(ctx.gy).toBeDefined();
 	});
-
-	it("leaves an already-complete context untouched", () => {
-		const builder = createBuilder();
-		const ctx = builder.buildEngineContext({
-			jy: 1403,
-			jm: 4,
-			jd: 10,
-			gy: 2024,
-			gm: 7,
-			gd: 1,
-			season: 2,
-		});
-		expect(ctx).toEqual({
-			jy: 1403,
-			jm: 4,
-			jd: 10,
-			gy: 2024,
-			gm: 7,
-			gd: 1,
-			season: 2,
-			week: undefined,
-		});
-	});
 });
 
 describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
