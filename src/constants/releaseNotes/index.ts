@@ -9,8 +9,14 @@ export const RELEASE_NOTES: TReleaseNote[] = [
 				"تغییر تنظیمات طبق استانداردهای جدید ابسیدین برای جستجوپذیری",
 				"امکان شخصی‌سازی تعطیلات هفتگی اضافه شد",
 				"الگوی DDDD برای نام‌گذاری داینامیک افزوده شد",
+				"جداسازی منطق تقویم هجری قمری از پلاگین با پکیج iran-estehlal",
 			],
-			en: [],
+			en: [
+				"Updated settings to comply with Obsidian's new standards for searchability",
+				"Added support for customizing weekly holidays",
+				"Added the DDDD pattern for dynamic naming",
+				"Separated the Hijri calendar logic from the plugin using the iran-estehlal package",
+			],
 		},
 	},
 	{
