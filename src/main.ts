@@ -141,10 +141,10 @@ export default class PersianCalendarPlugin extends Plugin {
 
 			addClasses(field, "persian-calendar__metadata-date");
 
-			const btn = document.createElement("button");
-			addClasses(btn, "persian-calendar__datepicker-button persian-calendar");
-			btn.setAttribute("type", "button");
-			field.appendChild(btn);
+			const btn = field.createEl("button", {
+				cls: "persian-calendar__datepicker-button persian-calendar",
+				type: "button",
+			});
 
 			setIcon(btn, "calendar-heart");
 
@@ -160,9 +160,7 @@ export default class PersianCalendarPlugin extends Plugin {
 
 				new DatePicker(this.app, this.setting, val, (out) => {
 					input.focus();
-
 					input.value = out;
-
 					input.dispatchEvent(new InputEvent("input", { bubbles: true }));
 					input.dispatchEvent(new Event("change", { bubbles: true }));
 				}).open();

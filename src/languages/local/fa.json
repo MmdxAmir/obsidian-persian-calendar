@@ -223,7 +223,9 @@
 			"confirmBtn": "تایید"
 		},
 		"datePicker": {
-			"tooltip": "انتخاب تاریخ به هجری شمسی"
+			"tooltip": "انتخاب تاریخ به هجری شمسی",
+			"jalali": "شمسی",
+			"gregorian": "میلادی"
 		}
 	},
 	"notice": {

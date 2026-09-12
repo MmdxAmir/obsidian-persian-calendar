@@ -261,7 +261,7 @@ export default class DatePicker extends Modal {
 			jalaliOption,
 			`persian-calendar__output-option ${this.outputMode === "jalali" ? "active" : ""}`,
 		);
-		jalaliOption.textContent = "شمسی";
+		jalaliOption.textContent = t("modal.datePicker.jalali");
 		toggle.appendChild(jalaliOption);
 		jalaliOption.onclick = () => {
 			this.setOutputMode("jalali");
@@ -272,7 +272,7 @@ export default class DatePicker extends Modal {
 			gregorianOption,
 			`persian-calendar__output-option ${this.outputMode === "gregorian" ? "active" : ""}`,
 		);
-		gregorianOption.textContent = "میلادی";
+		gregorianOption.textContent = t("modal.datePicker.gregorian");
 		toggle.appendChild(gregorianOption);
 		gregorianOption.onclick = () => {
 			this.setOutputMode("gregorian");
