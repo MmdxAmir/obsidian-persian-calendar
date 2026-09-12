@@ -1,5 +1,4 @@
 import type { EditorSuggestContext } from "obsidian";
-import type { IRAN_HIJRI_MONTHS } from "src/constants";
 
 // jalali = هجری شمسی/خورشیدی
 export type TJalali = {
@@ -35,8 +34,6 @@ export type TGetGregorianDayOfWeek = {
 	gYear: number;
 	gWeekNumber: number;
 };
-
-export type TSupportedHijriYear = keyof typeof IRAN_HIJRI_MONTHS;
 
 export type TDateFormat = "jalali" | "gregorian" | "hijri";
 export type THijriBase = "iran" | "umalqura";

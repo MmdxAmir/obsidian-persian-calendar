@@ -3,3 +3,4 @@ allowBuilds:
   simple-git-hooks: true
 minimumReleaseAgeExclude:
   - persian-holidays@1.5.5
+  - iran-estehlal@1.0.1
