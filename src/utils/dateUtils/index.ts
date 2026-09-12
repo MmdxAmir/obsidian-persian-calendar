@@ -4,6 +4,7 @@ export {
 	dateToGWeekNumber,
 	dateToWeekdayName,
 	getWeekdayTehran,
+	gregorianDayOfWeek,
 	gregorianMonthLength,
 	gregorianToDate,
 	gregorianToEndDayOfWeek,

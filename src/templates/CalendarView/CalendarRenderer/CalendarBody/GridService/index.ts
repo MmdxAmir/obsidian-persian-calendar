@@ -1,5 +1,5 @@
 import type CalendarState from "src/templates/CalendarView/CalendarState";
-import type { TWeekDays, TMonthGridCell, TSetting } from "src/types";
+import type { TMonthGridCell, TSetting, TWeekDays } from "src/types";
 import {
 	dateToJalali,
 	jalaliMonthLength,

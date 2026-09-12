@@ -67,6 +67,7 @@ You can use dynamic placeholders to customize the paths and filenames of your ca
 | `M`         | 11       | Gregorian month number               |
 | `jDD`       | 05       | Two-digit Jalali day of the month    |
 | `jD`        | 5        | Jalali day of the month              |
+| `DDDD`      | Monday   | Day of the week                      |
 | `DD`        | 06       | Two-digit Gregorian day of the month |
 | `D`         | 6        | Gregorian day of the month           |
 

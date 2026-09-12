@@ -5,6 +5,7 @@ import type { TDateEngineContext } from "src/utils/dateEngine";
 import { formatPattern } from "src/utils/dateEngine";
 import {
 	getWeekStartCalculator,
+	gregorianDayOfWeek,
 	gregorianToJalali,
 	jalaliToGregorian,
 	jalaliToSeason,
@@ -21,7 +22,7 @@ export default class NotePathBuilder {
 	}
 
 	public buildEngineContext(parts: TDateEngineContext): TDateEngineContext {
-		let { gy, gm, gd, jy, jm, jd, week, season } = parts;
+		let { gy, gm, gd, jy, jm, jd, season, dow } = parts;
 
 		if (jm === undefined && season !== undefined) {
 			jm = 3 * (season - 1) + 1;
@@ -46,7 +47,11 @@ export default class NotePathBuilder {
 			season = jalaliToSeason(jm);
 		}
 
-		return { gy, gm, gd, jy, jm, jd, week, season };
+		if (dow === undefined && gy !== undefined && gm !== undefined && gd !== undefined) {
+			dow = gregorianDayOfWeek(gy, gm, gd);
+		}
+
+		return { gy, gm, gd, jy, jm, jd, season, dow };
 	}
 
 	private resolveFolderPattern(path: string | undefined, context: TDateEngineContext) {
@@ -131,9 +136,6 @@ export default class NotePathBuilder {
 			season: seasonNumber,
 		})}.md`;
 
-		// Anchor to the season's first Jalali day so the folder pattern can
-		// also resolve Gregorian (YYYY/MM/DD) or Jalali month/day tokens, not
-		// only jYYYY/jQQ. See `buildEngineContext` for why this is required.
 		const jm = 3 * (seasonNumber - 1) + 1;
 		const jd = 1;
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
@@ -155,9 +157,6 @@ export default class NotePathBuilder {
 	}
 
 	public buildYearlyNotePath(jy: number) {
-		// Anchor to Farvardin 1st (jm/jd = 1/1) so the folder pattern can also
-		// resolve jMM/jQQ/MM/DD tokens, not only YYYY/jYYYY. See
-		// `buildEngineContext` for why this is required.
 		const jm = 1;
 		const jd = 1;
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
