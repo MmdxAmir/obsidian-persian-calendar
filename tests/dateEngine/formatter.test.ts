@@ -30,6 +30,18 @@ describe("formatPattern - numeric tokens", () => {
 	});
 });
 
+describe("formatPattern - Gregorian quarter tokens", () => {
+	it("renders numeric Gregorian quarter tokens", () => {
+		expect(formatPattern("Q", { quarter: 1 })).toBe("1");
+		expect(formatPattern("QQ", { quarter: 4 })).toBe("04");
+	});
+
+	it("renders short and full Gregorian quarter names", () => {
+		expect(formatPattern("QQQ", { quarter: 2 })).toBe("Sum");
+		expect(formatPattern("QQQQ", { quarter: 3 })).toBe("Autumn");
+	});
+});
+
 describe("formatPattern - name tokens", () => {
 	it("renders full Gregorian month names in English", () => {
 		expect(formatPattern("MMMM", { gm: 1 })).toBe("January");
