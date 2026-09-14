@@ -10,6 +10,8 @@
 
 .persian-calendar__tooltip {
 	position: absolute;
+	left: var(--persian-calendar-tooltip-left);
+	top: var(--persian-calendar-tooltip-top);
 	background-color: var(--color-base-20);
 	color: var(--color-base-100);
 	border: 1px solid var(--persian-calendar-color-base-1);
@@ -23,6 +25,10 @@
 	line-height: 1.6;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 	pointer-events: none;
+}
+
+.persian-calendar__tooltip.is-visible {
+	display: block;
 }
 
 .persian-calendar__tooltip-event {

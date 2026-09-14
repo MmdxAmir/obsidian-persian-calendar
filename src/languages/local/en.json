@@ -20,7 +20,7 @@
 	},
 	"setting": {
 		"banner": {
-			"title": "Use the links below to view the documentation, report issues or send feedback"
+			"title": "For help, bug reports or feedback"
 		},
 		"sections": {
 			"general": "General Settings",
@@ -166,12 +166,33 @@
 				"desc": "Display official Iranian holidays in red within the calendar."
 			},
 			"weekendDays": {
-				"name": "Weekend Days",
-				"desc": "Select which days should be marked as weekly holidays.",
-				"options": {
-					"friday": "Friday",
-					"thursdayFriday": "Thursday & Friday",
-					"fridaySaturday": "Friday & Saturday"
+				"saturday": {
+					"name": "Saturday off",
+					"desc": "Display Saturdays in red as weekly days off in the calendar."
+				},
+				"sunday": {
+					"name": "Sunday off",
+					"desc": "Display Sundays in red as weekly days off in the calendar."
+				},
+				"monday": {
+					"name": "Monday off",
+					"desc": "Display Mondays in red as weekly days off in the calendar."
+				},
+				"tuesday": {
+					"name": "Tuesday off",
+					"desc": "Display Tuesdays in red as weekly days off in the calendar."
+				},
+				"wednesday": {
+					"name": "Wednesday off",
+					"desc": "Display Wednesdays in red as weekly days off in the calendar."
+				},
+				"thursday": {
+					"name": "Thursday off",
+					"desc": "Display Thursdays in red as weekly days off in the calendar."
+				},
+				"friday": {
+					"name": "Friday off",
+					"desc": "Display Fridays in red as weekly days off in the calendar."
 				}
 			}
 		},
@@ -204,7 +225,9 @@
 			"confirmBtn": "Confirm"
 		},
 		"datePicker": {
-			"tooltip": "Choose Jalali Date"
+			"tooltip": "Choose Jalali Date",
+			"jalali": "Jalali",
+			"gregorian": "Gregorian"
 		}
 	},
 	"notice": {

@@ -40,7 +40,7 @@ jobs:
 
       - name: Get pnpm store directory
         id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -67,7 +67,7 @@ jobs:
           test -f manifest.json
 
       - name: Extract release notes
-        run: pnpm dlx tsx scripts/get-release-notes.ts
+        run: pnpm exec tsx scripts/get-release-notes.ts
 
       - uses: actions/attest-build-provenance@v3
         with:

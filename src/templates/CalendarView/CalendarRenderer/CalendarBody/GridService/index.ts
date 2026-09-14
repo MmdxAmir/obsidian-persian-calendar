@@ -1,5 +1,5 @@
 import type CalendarState from "src/templates/CalendarView/CalendarState";
-import type { TMonthGridCell, TSetting } from "src/types";
+import type { TMonthGridCell, TSetting, TWeekDays } from "src/types";
 import {
 	dateToJalali,
 	jalaliMonthLength,
@@ -17,15 +17,19 @@ export default class GridService {
 	) {}
 
 	private isWeekend(dayOfWeek: number): boolean {
-		const weekend = this.setting.weekendDays;
-		const map: Record<string, number[]> = {
-			"thursday-friday": [5, 6],
-			friday: [6],
-			"friday-saturday": [6, 0],
+		const dayMap: Record<number, keyof TWeekDays> = {
+			0: "saturday",
+			1: "sunday",
+			2: "monday",
+			3: "tuesday",
+			4: "wednesday",
+			5: "thursday",
+			6: "friday",
 		};
 
-		const days = map[weekend];
-		return Array.isArray(days) ? days.includes(dayOfWeek) : false;
+		const day = dayMap[dayOfWeek];
+
+		return day ? this.setting.weekendDays[day] : false;
 	}
 
 	private getCellJalaliDate(params: {

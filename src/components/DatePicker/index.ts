@@ -11,7 +11,6 @@ import {
 	jalaliToGregorian,
 	todayTehran,
 } from "src/utils/dateUtils";
-import { addClasses } from "src/utils/dom";
 import { extractDayFormat, toDayFormat, toFaNumber } from "src/utils/formatters";
 
 export default class DatePicker extends Modal {
@@ -100,188 +99,195 @@ export default class DatePicker extends Modal {
 		const { contentEl } = this;
 		contentEl.replaceChildren();
 
-		const rootContainer = document.createElement("div");
-		addClasses(rootContainer, "persian-calendar__datepicker");
+		const rootContainer = contentEl.createDiv({
+			cls: "persian-calendar__datepicker",
+		});
 		rootContainer.setAttribute("dir", "rtl");
-		contentEl.appendChild(rootContainer);
 
-		// Header with navigation buttons
 		this.renderHeader(rootContainer);
-
-		// Calendar grid
 		this.renderCalendarGrid(rootContainer);
-
-		// Footer with today button
 		this.renderFooter(rootContainer);
 	}
 
 	private renderHeader(container: HTMLElement) {
-		const header = document.createElement("div");
-		addClasses(header, "persian-calendar__datepicker-header");
-		container.appendChild(header);
+		const header = container.createDiv({
+			cls: "persian-calendar__datepicker-header",
+		});
 
 		// Previous year button
-		const prevYearButton = document.createElement("button");
-		addClasses(prevYearButton, "persian-calendar__datepicker-arrow");
-		header.appendChild(prevYearButton);
+		const prevYearButton = header.createEl("button", {
+			cls: "persian-calendar__datepicker-arrow",
+		});
+
 		setIcon(prevYearButton, "chevrons-right");
+
 		prevYearButton.onclick = () => {
 			this.shiftYear(-1);
 		};
 
 		// Previous month button
-		const prevMonthButton = document.createElement("button");
-		addClasses(prevMonthButton, "persian-calendar__datepicker-arrow");
-		header.appendChild(prevMonthButton);
+		const prevMonthButton = header.createEl("button", {
+			cls: "persian-calendar__datepicker-arrow",
+		});
+
 		setIcon(prevMonthButton, "chevron-right");
+
 		prevMonthButton.onclick = () => {
 			this.shiftMonth(-1);
 		};
 
 		// Month and year title
-		const titleEl = document.createElement("span");
-		titleEl.textContent = `${this.getMonthName(this.currentJalali.jm)} ${this.getYear(this.currentJalali.jy)}`;
-		addClasses(titleEl, "persian-calendar__datepicker-jmonth");
-		header.appendChild(titleEl);
+		header.createSpan({
+			cls: "persian-calendar__datepicker-jmonth",
+			text: `${this.getMonthName(this.currentJalali.jm)} ${this.getYear(this.currentJalali.jy)}`,
+		});
 
 		// Next month button
-		const nextMonthButton = document.createElement("button");
-		addClasses(nextMonthButton, "persian-calendar__datepicker-arrow");
-		header.appendChild(nextMonthButton);
+		const nextMonthButton = header.createEl("button", {
+			cls: "persian-calendar__datepicker-arrow",
+		});
+
 		setIcon(nextMonthButton, "chevron-left");
+
 		nextMonthButton.onclick = () => {
 			this.shiftMonth(1);
 		};
 
 		// Next year button
-		const nextYearButton = document.createElement("button");
-		addClasses(nextYearButton, "persian-calendar__datepicker-arrow");
-		header.appendChild(nextYearButton);
+		const nextYearButton = header.createEl("button", {
+			cls: "persian-calendar__datepicker-arrow",
+		});
+
 		setIcon(nextYearButton, "chevrons-left");
+
 		nextYearButton.onclick = () => {
 			this.shiftYear(1);
 		};
 	}
 
 	private renderCalendarGrid(container: HTMLElement) {
-		const grid = document.createElement("div");
-		addClasses(grid, "persian-calendar__datepicker-days");
-		grid.setAttribute("role", "grid");
-		container.appendChild(grid);
-
-		// Render weekday headers
-		this.getWeekdayLetters().forEach((weekdayLetter) => {
-			const weekdayEl = document.createElement("span");
-			weekdayEl.textContent = weekdayLetter;
-			addClasses(weekdayEl, "persian-calendar__datepicker-weekday");
-			weekdayEl.setAttribute("role", "columnheader");
-			grid.appendChild(weekdayEl);
+		const grid = container.createDiv({
+			cls: "persian-calendar__datepicker-days",
 		});
 
-		// Calculate offset for first day of month
+		grid.setAttribute("role", "grid");
+
+		this.getWeekdayLetters().forEach((weekdayLetter) => {
+			const weekdayEl = grid.createSpan({
+				cls: "persian-calendar__datepicker-weekday",
+				text: weekdayLetter,
+			});
+
+			weekdayEl.setAttribute("role", "columnheader");
+		});
+
 		const firstDayGregorian = jalaliToGregorian(this.currentJalali.jy, this.currentJalali.jm, 1);
+
 		const firstDayJavascript = new Date(
 			firstDayGregorian.gy,
 			firstDayGregorian.gm - 1,
 			firstDayGregorian.gd,
 		).getDay();
+
 		const startDayOffset = (firstDayJavascript + 1) % 7;
 
-		// Get previous and next month info
 		const previousMonth = this.currentJalali;
 		const previousMonthLength = jalaliMonthLength(previousMonth.jy, previousMonth.jm);
+
 		const currentMonthLength = jalaliMonthLength(this.currentJalali.jy, this.currentJalali.jm);
 
-		// Total cells needed: 6 weeks × 7 days = 42 cells
 		const totalCells = 42;
 		const currentMonthCells = currentMonthLength;
 		const previousMonthCells = startDayOffset;
 		const nextMonthCells = totalCells - previousMonthCells - currentMonthCells;
 
-		// Render previous month's trailing days
 		for (let i = previousMonthCells - 1; i >= 0; i--) {
 			const dayNumber = previousMonthLength - i;
-			const button = document.createElement("div");
-			button.textContent = toFaNumber(dayNumber);
-			addClasses(
-				button,
-				"persian-calendar__datepicker-day persian-calendar__datepicker-no-current-month",
-			);
-			grid.appendChild(button);
+
+			const button = grid.createDiv({
+				cls: ["persian-calendar__datepicker-day", "persian-calendar__datepicker-no-current-month"],
+				text: toFaNumber(dayNumber),
+			});
+
 			button.tabIndex = -1;
 		}
 
-		// Render current month's days
 		const today = dateToJalali(todayTehran());
 
 		for (let day = 1; day <= currentMonthLength; day++) {
 			const isSelected = day === this.currentJalali.jd;
+
 			const isToday =
 				today.jy === this.currentJalali.jy &&
 				today.jm === this.currentJalali.jm &&
 				today.jd === day;
 
 			const classList = ["persian-calendar__datepicker-day"];
-			if (isSelected) classList.push("persian-calendar__datepicker-day--selected");
-			if (isToday) classList.push("persian-calendar__datepicker-day--current");
 
-			const dayButton = document.createElement("div");
-			dayButton.textContent = toFaNumber(day);
-			addClasses(dayButton, classList);
-			grid.appendChild(dayButton);
+			if (isSelected) {
+				classList.push("persian-calendar__datepicker-day--selected");
+			}
+
+			if (isToday) {
+				classList.push("persian-calendar__datepicker-day--current");
+			}
+
+			const dayButton = grid.createDiv({
+				cls: classList,
+				text: toFaNumber(day),
+			});
+
 			dayButton.onclick = () => {
 				this.selectDay(day);
 			};
 		}
 
-		// Render next month's leading days
 		for (let day = 1; day <= nextMonthCells; day++) {
-			const button = document.createElement("div");
-			button.textContent = toFaNumber(day);
-			addClasses(
-				button,
-				"persian-calendar__datepicker-day persian-calendar__datepicker-no-current-month",
-			);
-			grid.appendChild(button);
+			const button = grid.createDiv({
+				cls: ["persian-calendar__datepicker-day", "persian-calendar__datepicker-no-current-month"],
+				text: toFaNumber(day),
+			});
+
 			button.tabIndex = -1;
 		}
 	}
 
 	private renderFooter(container: HTMLElement) {
-		const footer = document.createElement("div");
-		addClasses(footer, "persian-calendar__datepicker-footer");
-		container.appendChild(footer);
+		const footer = container.createDiv({
+			cls: "persian-calendar__datepicker-footer",
+		});
 
-		const toggle = document.createElement("div");
-		addClasses(toggle, "persian-calendar__output-toggle");
-		footer.appendChild(toggle);
+		const toggle = footer.createDiv({
+			cls: "persian-calendar__output-toggle",
+		});
 
-		const jalaliOption = document.createElement("div");
-		addClasses(
-			jalaliOption,
-			`persian-calendar__output-option ${this.outputMode === "jalali" ? "active" : ""}`,
-		);
-		jalaliOption.textContent = "شمسی";
-		toggle.appendChild(jalaliOption);
+		const jalaliOption = toggle.createDiv({
+			cls: ["persian-calendar__output-option", ...(this.outputMode === "jalali" ? ["active"] : [])],
+			text: t("modal.datePicker.jalali"),
+		});
+
 		jalaliOption.onclick = () => {
 			this.setOutputMode("jalali");
 		};
 
-		const gregorianOption = document.createElement("div");
-		addClasses(
-			gregorianOption,
-			`persian-calendar__output-option ${this.outputMode === "gregorian" ? "active" : ""}`,
-		);
-		gregorianOption.textContent = "میلادی";
-		toggle.appendChild(gregorianOption);
+		const gregorianOption = toggle.createDiv({
+			cls: [
+				"persian-calendar__output-option",
+				...(this.outputMode === "gregorian" ? ["active"] : []),
+			],
+			text: t("modal.datePicker.gregorian"),
+		});
+
 		gregorianOption.onclick = () => {
 			this.setOutputMode("gregorian");
 		};
 
-		const currentButton = document.createElement("button");
-		currentButton.textContent = t("current");
-		addClasses(currentButton, "persian-calendar__go-current");
-		footer.appendChild(currentButton);
+		const currentButton = footer.createEl("button", {
+			cls: "persian-calendar__go-current",
+			text: t("current"),
+			type: "button",
+		});
+
 		currentButton.onclick = () => {
 			this.goToCurrent();
 		};

@@ -1,39 +1,37 @@
-import type { SectionRenderer } from "src/types";
-import { addHeading, addToggle } from "../controls";
+import type { SettingDefinitionItem } from "obsidian";
+import { t } from "src/languages";
 
-export const renderEventSection: SectionRenderer = (ctx, containerEl) => {
-	const { controller } = ctx;
-
-	addHeading(controller, containerEl, "setting.sections.events");
-
-	addToggle(controller, containerEl, "setting.events.official.name", null, "showIROfficialEvents", {
-		refresh: true,
-	});
-
-	addToggle(controller, containerEl, "setting.events.global.name", null, "showGlobalEvents", {
-		refresh: true,
-	});
-
-	addToggle(
-		controller,
-		containerEl,
-		"setting.events.historical.name",
-		null,
-		"showIRHistoricalEvents",
+export function getEventSettings(): SettingDefinitionItem[] {
+	return [
 		{
-			refresh: true,
+			type: "group",
+			heading: t("setting.sections.events"),
+			items: [
+				{
+					name: t("setting.events.official.name"),
+					control: { type: "toggle", key: "showIROfficialEvents" },
+				},
+				{
+					name: t("setting.events.global.name"),
+					control: { type: "toggle", key: "showGlobalEvents" },
+				},
+				{
+					name: t("setting.events.historical.name"),
+					control: { type: "toggle", key: "showIRHistoricalEvents" },
+				},
+				{
+					name: t("setting.events.ancient.name"),
+					control: { type: "toggle", key: "showIRAncientEvents" },
+				},
+				{
+					name: t("setting.events.shia.name"),
+					control: { type: "toggle", key: "showShiaEvents" },
+				},
+				{
+					name: t("setting.events.sunni.name"),
+					control: { type: "toggle", key: "showSunniEvents" },
+				},
+			],
 		},
-	);
-
-	addToggle(controller, containerEl, "setting.events.ancient.name", null, "showIRAncientEvents", {
-		refresh: true,
-	});
-
-	addToggle(controller, containerEl, "setting.events.shia.name", null, "showShiaEvents", {
-		refresh: true,
-	});
-
-	addToggle(controller, containerEl, "setting.events.sunni.name", null, "showSunniEvents", {
-		refresh: true,
-	});
-};
+	];
+}

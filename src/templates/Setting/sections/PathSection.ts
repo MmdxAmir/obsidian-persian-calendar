@@ -1,77 +1,40 @@
-import { Setting } from "obsidian";
+import { Setting, type SettingDefinitionItem } from "obsidian";
 import NotePathBuilder from "src/services/NotePathBuilder";
-import type { SectionRenderer } from "src/types";
-import { addHeading, addPath } from "../controls";
+import type PersianCalendarPlugin from "src/main";
+import { t } from "src/languages";
 import { NOTE_TYPES } from "../noteTypes";
 
-export const renderPathSection: SectionRenderer = (ctx, containerEl) => {
-	const { app, controller } = ctx;
-
-	addHeading(controller, containerEl, "setting.sections.paths");
-
-	for (const noteType of NOTE_TYPES) {
-		if (noteType.id !== "weekly") {
-			addPath(
-				app,
-				controller,
-				containerEl,
-				noteType.pathNameKey,
-				noteType.pathDescKey,
-				noteType.pathKey,
-				"folder",
-			);
-			continue;
-		}
-
-		const pathBuilder = new NotePathBuilder(controller.plugin);
-		let anchorVisible = pathBuilder.weeklyPathNeedsAnchor();
-		let anchorSetting: Setting;
-
-		const refreshAnchorText = () => {
-			const isFa = controller.plugin.setting.language === "fa";
-			anchorSetting.setName(isFa ? "مبنای تاریخ مسیر هفته‌نوشت" : "Weekly path date anchor");
-			anchorSetting.setDesc(
-				isFa
-					? "برای مسیر هفته‌نوشت دارای متغیر هفته، مشخص می‌کند متغیرهای تاریخِ مسیر بر اساس ابتدای هفته یا انتهای هفته محاسبه شوند."
-					: "For weekly paths with a week variable, determines whether the path's date variables are resolved from the start or end of the week.",
-			);
-
-			const select = anchorSetting.controlEl.querySelector<HTMLSelectElement>("select");
-			if (select) {
-				select.options[0].textContent = isFa ? "ابتدای هفته" : "Start of week";
-				select.options[1].textContent = isFa ? "انتهای هفته" : "End of week";
-			}
-		};
-
-		const refreshAnchorVisibility = () => {
-			const nextVisible = pathBuilder.weeklyPathNeedsAnchor();
-			if (nextVisible === anchorVisible) return;
-
-			anchorVisible = nextVisible;
-			anchorSetting.settingEl.style.display = nextVisible ? "flex" : "none";
-		};
-
-		addPath(
-			app,
-			controller,
-			containerEl,
-			noteType.pathNameKey,
-			noteType.pathDescKey,
-			noteType.pathKey,
-			"folder",
-			{ onBlur: refreshAnchorVisibility },
-		);
-
-		anchorSetting = new Setting(containerEl).addDropdown((dropdown) => {
-			dropdown.addOption("start", "");
-			dropdown.addOption("end", "");
-			dropdown.setValue(controller.get("weeklyPathAnchor") ?? "start").onChange(async (value) => {
-				await controller.set("weeklyPathAnchor", value as "start" | "end");
-			});
-		});
-
-		controller.trackLocale(refreshAnchorText);
-		refreshAnchorText();
-		anchorSetting.settingEl.style.display = anchorVisible ? "flex" : "none";
-	}
-};
+export function getPathSettings(plugin: PersianCalendarPlugin): SettingDefinitionItem[] {
+	return [{
+		type: "group",
+		heading: t("setting.sections.paths"),
+		items: [
+			...NOTE_TYPES.map((noteType) => ({
+				name: t(noteType.pathNameKey),
+				desc: t(noteType.pathDescKey),
+				control: { type: "folder" as const, key: noteType.pathKey, includeRoot: true },
+			})),
+			{
+				name: "",
+				render: (setting: Setting) => {
+					const visible = new NotePathBuilder(plugin).weeklyPathNeedsAnchor();
+					setting.settingEl.style.display = visible ? "flex" : "none";
+					if (!visible) return;
+					const fa = plugin.setting.language === "fa";
+					setting.setName(fa ? "مبنای تاریخ مسیر هفته‌نوشت" : "Weekly path date anchor");
+					setting.setDesc(fa ? "برای مسیر هفته‌نوشت، تاریخ مسیر از ابتدای هفته یا انتهای هفته محاسبه می‌شود." : "For weekly paths, date values are resolved from the start or end of the week.");
+					setting.addDropdown((dropdown) => {
+						dropdown.addOption("start", fa ? "ابتدای هفته" : "Start of week");
+						dropdown.addOption("end", fa ? "انتهای هفته" : "End of week");
+						dropdown.setValue(plugin.setting.weeklyPathAnchor ?? "start");
+						dropdown.onChange(async (value) => {
+							plugin.setting.weeklyPathAnchor = value as "start" | "end";
+							await plugin.saveSetting();
+							plugin.refreshViews();
+						});
+					});
+				},
+			},
+		],
+	}];
+}

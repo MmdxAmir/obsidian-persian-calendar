@@ -30,6 +30,11 @@ export function dateToGregorian(date: Date): TGregorian {
 	};
 }
 
+export function gregorianDayOfWeek(gy: number, gm: number, gd: number): number {
+	const jsDay = gregorianToDate(gy, gm, gd).getUTCDay();
+	return jsDay === 6 ? 1 : jsDay + 2;
+}
+
 export function dateToWeekdayName(date: Date, local: TLocale = "fa"): string {
 	const locale = local === "fa" ? "fa-IR" : "en-US";
 

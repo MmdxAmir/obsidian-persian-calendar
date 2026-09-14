@@ -1,65 +1,51 @@
-import { setLocal } from "src/languages";
-import type { SectionRenderer, TLocale } from "src/types";
-import { addDropdown, addHeading, addToggle } from "../controls";
+import type { SettingDefinitionItem } from "obsidian";
+import { t } from "src/languages";
 
-export const renderGeneralSection: SectionRenderer = (ctx, containerEl) => {
-	const { controller } = ctx;
-
-	addHeading(controller, containerEl, "setting.sections.general");
-
-	addDropdown(
-		controller,
-		containerEl,
-		"setting.general.language.name",
-		null,
-		"language",
+export function getGeneralSettings(): SettingDefinitionItem[] {
+	return [
 		{
-			fa: "setting.general.language.options.fa",
-			en: "setting.general.language.options.en",
+			type: "group",
+			heading: t("setting.sections.general"),
+			items: [
+				{
+					name: t("setting.general.language.name"),
+					control: {
+						type: "dropdown",
+						key: "language",
+						options: {
+							fa: t("setting.general.language.options.fa"),
+							en: t("setting.general.language.options.en"),
+						},
+					},
+				},
+				{
+					name: t("setting.general.placeholderFormat.name"),
+					desc: t("setting.general.placeholderFormat.desc"),
+					control: {
+						type: "dropdown",
+						key: "dateFormat",
+						options: {
+							jalali: t("setting.general.placeholderFormat.options.jalali"),
+							gregorian: t("setting.general.placeholderFormat.options.gregorian"),
+						},
+					},
+				},
+				{
+					name: t("setting.general.askBeforeCreate.name"),
+					desc: t("setting.general.askBeforeCreate.desc"),
+					control: { type: "toggle", key: "askForCreateNote" },
+				},
+				{
+					name: t("setting.general.openDailyOnStartup.name"),
+					desc: t("setting.general.openDailyOnStartup.desc"),
+					control: { type: "toggle", key: "openDailyNoteOnStartup" },
+				},
+				{
+					name: t("setting.general.showSeasons.name"),
+					desc: t("setting.general.showSeasons.desc"),
+					control: { type: "toggle", key: "showSeasonalNotes" },
+				},
+			],
 		},
-		{
-			refresh: true,
-			onSelect: (value) => setLocal(value as TLocale),
-		},
-	);
-
-	addDropdown(
-		controller,
-		containerEl,
-		"setting.general.placeholderFormat.name",
-		"setting.general.placeholderFormat.desc",
-		"dateFormat",
-		{
-			jalali: "setting.general.placeholderFormat.options.jalali",
-			gregorian: "setting.general.placeholderFormat.options.gregorian",
-		},
-		{ refresh: true },
-	);
-
-	addToggle(
-		controller,
-		containerEl,
-		"setting.general.askBeforeCreate.name",
-		"setting.general.askBeforeCreate.desc",
-		"askForCreateNote",
-		{ refresh: true },
-	);
-
-	addToggle(
-		controller,
-		containerEl,
-		"setting.general.openDailyOnStartup.name",
-		"setting.general.openDailyOnStartup.desc",
-		"openDailyNoteOnStartup",
-		{ refresh: true },
-	);
-
-	addToggle(
-		controller,
-		containerEl,
-		"setting.general.showSeasons.name",
-		"setting.general.showSeasons.desc",
-		"showSeasonalNotes",
-		{ refresh: true },
-	);
-};
+	];
+}

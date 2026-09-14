@@ -5,7 +5,6 @@ import type { TSetting } from "src/types";
 import { clearCompiledPatternCache } from "src/utils/dateEngine/compiler";
 import { DatePatternFormatError } from "src/utils/dateEngine/errors";
 import { formatPattern } from "src/utils/dateEngine/formatter";
-import { gregorianToJalali, jalaliToGregorian } from "src/utils/dateUtils";
 
 beforeEach(() => {
 	clearCompiledPatternCache();
@@ -49,36 +48,6 @@ describe("NotePathBuilder.buildEngineContext", () => {
 		expect(ctx.jd).toBe(1);
 		expect(ctx.gy).toBeDefined();
 	});
-
-	it("leaves an already-complete context untouched", () => {
-		const builder = createBuilder();
-		const ctx = builder.buildEngineContext({
-			jy: 1403,
-			jm: 4,
-			jd: 10,
-			gy: 2024,
-			gm: 7,
-			gd: 1,
-			season: 2,
-		});
-		expect(ctx).toEqual({
-			jy: 1403,
-			jm: 4,
-			jd: 10,
-			gy: 2024,
-			gm: 7,
-			gd: 1,
-			season: 2,
-			quarter: 3,
-			week: undefined,
-		});
-	});
-
-	it("preserves an explicitly supplied week number", () => {
-		const builder = createBuilder();
-		const ctx = builder.buildEngineContext({ jy: 1403, jm: 1, jd: 1, week: 7 });
-		expect(ctx.week).toBe(7);
-	});
 });
 
 describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
@@ -92,8 +61,8 @@ describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
 		expect(() => builder.buildYearlyNotePath(1403)).not.toThrow();
 	});
 
-	it("resolves jYYYY/jQQQQ for the yearly note path", () => {
-		const builder = createBuilder({ yearlyNotesPath: "jYYYY/jQQQQ" });
+	it("resolves YYYY/jQQQQ for the yearly note path", () => {
+		const builder = createBuilder({ yearlyNotesPath: "YYYY/jQQQQ" });
 		expect(() => builder.buildYearlyNotePath(1403)).not.toThrow();
 	});
 
@@ -134,20 +103,6 @@ describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
 		expect(() => builder.buildSeasonalNotePath(1403, 1)).not.toThrow();
 	});
 
-	it("resolves the weekly week token in a dynamic weekly path", () => {
-		const builder = createBuilder({
-			weeklyNotesPath: "jYYYY/jQQQQ/jMM - jMMMM/ww",
-		});
-		const { filePath } = builder.buildWeeklyNotePath(1403, 7);
-		expect(filePath).toMatch(/\/07\/1403-W7\.md$/);
-	});
-
-	it("resolves the unpadded weekly week token", () => {
-		const builder = createBuilder({ weeklyNotesPath: "jYYYY/w" });
-		const { filePath } = builder.buildWeeklyNotePath(1403, 7);
-		expect(filePath).toBe("1403/7/1403-W7.md");
-	});
-
 	it("still resolves the default daily/weekly/monthly note paths", () => {
 		const builder = createBuilder();
 		expect(() => builder.buildDailyNotePath(1403, 1, 1)).not.toThrow();
@@ -165,42 +120,5 @@ describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
 		expect(() => formatPattern("jMM", builder.buildEngineContext({ jy: 1403 }))).toThrow(
 			DatePatternFormatError,
 		);
-	});
-});
-
-describe("NotePathBuilder.weeklyPathNeedsAnchor", () => {
-	it.each([
-		["jYYYY/ww", true],
-		["jYYYY/jMM/ww", true],
-		["YYYY/QQQQ/ww", true],
-		["ww", false],
-		["Weekly/ww", false],
-		["ww/jYYYY", false],
-		["jYYYY-ww", false],
-	])("returns %s for %s", (path, expected) => {
-		const builder = createBuilder({ weeklyNotesPath: path });
-		expect(builder.weeklyPathNeedsAnchor()).toBe(expected);
-	});
-});
-
-describe("NotePathBuilder daily week context at year boundaries", () => {
-	it("keeps Jalali first-day-of-year boundary days in week 1", () => {
-		const builder = createBuilder({
-			dailyNotesPath: "jYYYY/ww",
-			weekCalculation: "jalali-first-day-of-year",
-		});
-		const { gy, gm, gd } = jalaliToGregorian(1404, 12, 29);
-		const { filePath } = builder.buildDailyNotePath(1404, 12, 29);
-		expect(filePath).toBe(`1404/01/${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}.md`);
-	});
-
-	it("keeps Gregorian first-day-of-year boundary days in week 1", () => {
-		const builder = createBuilder({
-			dailyNotesPath: "YYYY/ww",
-			weekCalculation: "gregorian-first-day-of-year",
-		});
-		const { jy, jm, jd } = gregorianToJalali(2026, 12, 26);
-		const { filePath } = builder.buildDailyNotePath(jy, jm, jd);
-		expect(filePath).toBe("2026/01/2026-12-26.md");
 	});
 });

@@ -20,7 +20,6 @@ import CalendarView from "./templates/CalendarView";
 import CalendarSettingTab from "./templates/Setting";
 import type { TSetting } from "./types";
 import { dateToJalali, todayTehran } from "./utils/dateUtils";
-import { addClasses } from "./utils/dom";
 import { setDefaultEventAdapter } from "./utils/eventUtils/eventAdapter";
 
 export default class PersianCalendarPlugin extends Plugin {
@@ -139,14 +138,12 @@ export default class PersianCalendarPlugin extends Plugin {
 			const input = field.querySelector<HTMLInputElement>('input[type="date"]');
 			if (!input) return;
 
-			field.style.display = "flex";
-			field.style.alignItems = "center";
-			field.style.gap = "6px";
+			field.addClass("persian-calendar__metadata-date");
 
-			const btn = document.createElement("button");
-			addClasses(btn, "persian-calendar__datepicker-button persian-calendar");
-			btn.setAttribute("type", "button");
-			field.appendChild(btn);
+			const btn = field.createEl("button", {
+				cls: "persian-calendar__datepicker-button persian-calendar",
+				type: "button",
+			});
 
 			setIcon(btn, "calendar-heart");
 
@@ -162,9 +159,7 @@ export default class PersianCalendarPlugin extends Plugin {
 
 				new DatePicker(this.app, this.setting, val, (out) => {
 					input.focus();
-
 					input.value = out;
-
 					input.dispatchEvent(new InputEvent("input", { bubbles: true }));
 					input.dispatchEvent(new Event("change", { bubbles: true }));
 				}).open();

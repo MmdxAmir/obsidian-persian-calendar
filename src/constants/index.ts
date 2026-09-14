@@ -6,7 +6,6 @@ export {
 	SMART_DATE_LINKS,
 	WEEKDAYS_NAME,
 } from "./dateNames";
-export { IRAN_HIJRI_ANCHOR, IRAN_HIJRI_MONTHS } from "./hijriSet";
 export {
 	dailyInTextRegex,
 	isDailyRegex,

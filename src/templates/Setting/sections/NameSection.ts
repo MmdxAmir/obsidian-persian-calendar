@@ -1,61 +1,73 @@
-import type { SectionRenderer } from "src/types";
-import { addDropdown, addHeading, addValidatedText } from "../controls";
-import { patternValidator } from "../validation";
+import type { SettingDefinitionItem } from "obsidian";
+import { t } from "src/languages";
+import { validatePattern } from "src/utils/dateEngine";
 
-export const renderNameSection: SectionRenderer = (ctx, containerEl) => {
-	const { controller } = ctx;
-
-	addHeading(controller, containerEl, "setting.sections.names");
-
-	addValidatedText(
-		controller,
-		containerEl,
-		"setting.naming.daily.name",
-		"setting.naming.daily.desc",
-		"dailyNoteFormat",
-		patternValidator,
-	);
-
-	addDropdown(
-		controller,
-		containerEl,
-		"setting.naming.weekCalculation.name",
-		"setting.naming.weekCalculation.desc",
-		"weekCalculation",
+export function getNameSettings(): SettingDefinitionItem[] {
+	return [
 		{
-			"jalali-first-day-of-year": "setting.naming.weekCalculation.options.firstDayOfYear",
-			"jalali-first-week-start": "setting.naming.weekCalculation.options.firstWeekStart",
-			"gregorian-first-day-of-year":
-				"setting.naming.weekCalculation.options.gregorianFirstDayOfYear",
-			"gregorian-first-week-start":
-				"setting.naming.weekCalculation.options.gregorianFirstWeekStart",
-		},
-		{ refresh: true },
-	);
+			type: "group",
+			heading: t("setting.sections.names"),
+			items: [
+				{
+					name: t("setting.naming.daily.name"),
+					desc: t("setting.naming.daily.desc"),
+					control: {
+						type: "text",
+						key: "dailyNoteFormat",
+						validate: (value: string) => {
+							const result = validatePattern(value);
 
-	addDropdown(
-		controller,
-		containerEl,
-		"setting.naming.monthly.name",
-		"setting.naming.monthly.desc",
-		"monthlyNoteNaming",
-		{
-			jalali: "setting.naming.monthly.options.jalali",
-			gregorian: "setting.naming.monthly.options.gregorian",
-		},
-		{ refresh: true },
-	);
+							if (result.valid) return;
 
-	addDropdown(
-		controller,
-		containerEl,
-		"setting.naming.yearly.name",
-		"setting.naming.yearly.desc",
-		"yearlyNoteNaming",
-		{
-			jalali: "setting.naming.yearly.options.jalali",
-			gregorian: "setting.naming.yearly.options.gregorian",
+							return result.errors.map((error) => error.message).join("\n");
+						},
+					},
+				},
+				{
+					name: t("setting.naming.weekCalculation.name"),
+					desc: t("setting.naming.weekCalculation.desc"),
+					control: {
+						type: "dropdown",
+						key: "weekCalculation",
+						options: {
+							"jalali-first-day-of-year": t(
+								"setting.naming.weekCalculation.options.firstDayOfYear",
+							),
+							"jalali-first-week-start": t("setting.naming.weekCalculation.options.firstWeekStart"),
+							"gregorian-first-day-of-year": t(
+								"setting.naming.weekCalculation.options.gregorianFirstDayOfYear",
+							),
+							"gregorian-first-week-start": t(
+								"setting.naming.weekCalculation.options.gregorianFirstWeekStart",
+							),
+						},
+					},
+				},
+				{
+					name: t("setting.naming.monthly.name"),
+					desc: t("setting.naming.monthly.desc"),
+					control: {
+						type: "dropdown",
+						key: "monthlyNoteNaming",
+						options: {
+							jalali: t("setting.naming.monthly.options.jalali"),
+							gregorian: t("setting.naming.monthly.options.gregorian"),
+						},
+					},
+				},
+				{
+					name: t("setting.naming.yearly.name"),
+					desc: t("setting.naming.yearly.desc"),
+					control: {
+						type: "dropdown",
+						key: "yearlyNoteNaming",
+						options: {
+							jalali: t("setting.naming.yearly.options.jalali"),
+							gregorian: t("setting.naming.yearly.options.gregorian"),
+						},
+					},
+				},
+			],
 		},
-		{ refresh: true },
-	);
-};
+	];
+}

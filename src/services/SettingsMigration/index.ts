@@ -1,4 +1,4 @@
-import type { TSetting } from "src/types";
+import type { TSetting, TWeekDays } from "src/types";
 import { defaultTokenRegistry, tokenize } from "src/utils/dateEngine";
 
 const LEGACY_RECOGNIZED_TOKENS = new Set([
@@ -49,8 +49,56 @@ export function migrateLegacyPathPatterns(setting: TSetting): TSetting {
 	return migrated;
 }
 
+type LegacyWeekendDays = "thursday-friday" | "friday" | "friday-saturday";
+
+type RawStoredSettings = Omit<Partial<TSetting>, "weekendDays"> & {
+	weekendDays?: TWeekDays | LegacyWeekendDays;
+};
+
+function migrateWeekendDays(rawStoredData: RawStoredSettings, merged: TSetting): TSetting {
+	const legacyWeekendDays = rawStoredData.weekendDays;
+
+	if (
+		typeof legacyWeekendDays !== "string" ||
+		!["thursday-friday", "friday", "friday-saturday"].includes(legacyWeekendDays)
+	) {
+		return merged;
+	}
+
+	const weekendDays: TWeekDays = {
+		saturday: false,
+		sunday: false,
+		monday: false,
+		tuesday: false,
+		wednesday: false,
+		thursday: false,
+		friday: false,
+	};
+
+	switch (legacyWeekendDays) {
+		case "thursday-friday":
+			weekendDays.thursday = true;
+			weekendDays.friday = true;
+			break;
+
+		case "friday":
+			weekendDays.friday = true;
+			break;
+
+		case "friday-saturday":
+			weekendDays.friday = true;
+			weekendDays.saturday = true;
+			break;
+	}
+
+	return {
+		...merged,
+		weekendDays,
+	};
+}
+
 export function applySettingsMigrations(
-	rawStoredData: Partial<TSetting> | null,
+	rawStoredData: RawStoredSettings | null,
 	merged: TSetting,
 ): TSetting {
 	let result = merged;
@@ -63,6 +111,8 @@ export function applySettingsMigrations(
 	if (rawStoredData && rawStoredData.dailyNoteFormat === undefined) {
 		result.dailyNoteFormat = result.dateFormat === "jalali" ? "jYYYY-jMM-jDD" : "YYYY-MM-DD";
 	}
+
+	result = migrateWeekendDays(rawStoredData ?? {}, result);
 
 	return result;
 }
