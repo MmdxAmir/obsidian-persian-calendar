@@ -14,6 +14,7 @@ import { createSettingChangeHandler, getNestedValue } from "./settingEffects";
 
 export default class CalendarSettingTab extends PluginSettingTab {
 	readonly plugin: PersianCalendarPlugin;
+
 	private readonly applySettingChange: (key: string, value: unknown) => Promise<void>;
 
 	constructor(app: App, plugin: PersianCalendarPlugin) {
@@ -29,8 +30,16 @@ export default class CalendarSettingTab extends PluginSettingTab {
 
 	private renderBanner(setting: Setting): void {
 		setting.settingEl.addClass("persian-calendar-banner");
-		const contentEl = setting.settingEl.createDiv({ cls: "persian-calendar-banner-content" });
-		contentEl.createDiv({ cls: "persian-calendar-banner-title", text: t("setting.banner.title") });
+
+		const contentEl = setting.settingEl.createDiv({
+			cls: "persian-calendar-banner-content",
+		});
+
+		contentEl.createDiv({
+			cls: "persian-calendar-banner-title",
+			text: t("setting.banner.title"),
+		});
+
 		SocialLinks(contentEl);
 	}
 
@@ -45,11 +54,14 @@ export default class CalendarSettingTab extends PluginSettingTab {
 				searchable: false,
 				render: (setting: Setting) => {
 					setting.settingEl.empty();
+
 					this.containerEl.addClass("persian-calendar");
 					this.containerEl.style.direction = getDirection();
+
 					this.renderBanner(new Setting(setting.settingEl));
 				},
 			},
+
 			...getGeneralSettings(),
 			...getPathSettings(this.plugin),
 			...getNameSettings(),
