@@ -6,6 +6,7 @@ import { defaultTokenRegistry } from "src/utils/dateEngine/tokens";
 import { tokenize } from "src/utils/dateEngine/tokenizer";
 import {
 	getWeekStartCalculator,
+	gregorianDayOfWeek,
 	gregorianToJalali,
 	jalaliToDate,
 	jalaliToGregorian,
@@ -25,7 +26,7 @@ export default class NotePathBuilder {
 	}
 
 	public buildEngineContext(parts: TDateEngineContext): TDateEngineContext {
-		let { gy, gm, gd, jy, jm, jd, week, season, quarter } = parts;
+		let { gy, gm, gd, jy, jm, jd, week, season, quarter, dow } = parts;
 
 		if (jm === undefined && season !== undefined) {
 			jm = 3 * (season - 1) + 1;
@@ -46,15 +47,13 @@ export default class NotePathBuilder {
 			jd ??= derived.jd;
 		}
 
-		if (season === undefined && jm !== undefined) {
-			season = jalaliToSeason(jm);
+		if (season === undefined && jm !== undefined) season = jalaliToSeason(jm);
+		if (quarter === undefined && gm !== undefined) quarter = Math.floor((gm - 1) / 3) + 1;
+		if (dow === undefined && gy !== undefined && gm !== undefined && gd !== undefined) {
+			dow = gregorianDayOfWeek(gy, gm, gd);
 		}
 
-		if (quarter === undefined && gm !== undefined) {
-			quarter = Math.floor((gm - 1) / 3) + 1;
-		}
-
-		return { gy, gm, gd, jy, jm, jd, week, season, quarter };
+		return { gy, gm, gd, jy, jm, jd, week, season, quarter, dow };
 	}
 
 	private resolveFolderPattern(path: string | undefined, context: TDateEngineContext) {
@@ -70,7 +69,6 @@ export default class NotePathBuilder {
 	public weeklyPathNeedsAnchor(): boolean {
 		const path = this.normalizeFolderPath(this.plugin.setting.weeklyNotesPath);
 		if (!path) return false;
-
 		try {
 			const pathSegments = path.split("/");
 			const segmentFields = pathSegments.map((segment) =>
@@ -79,12 +77,8 @@ export default class NotePathBuilder {
 					.map((part) => part.token.field),
 			);
 			const weekSegmentIndex = segmentFields.findIndex((fields) => fields.includes("week"));
-
 			if (weekSegmentIndex <= 0) return false;
-
-			return segmentFields
-				.slice(0, weekSegmentIndex)
-				.some((fields) => fields.some((field) => WEEK_PATH_DATE_FIELDS.has(field)));
+			return segmentFields.slice(0, weekSegmentIndex).some((fields) => fields.some((field) => WEEK_PATH_DATE_FIELDS.has(field)));
 		} catch {
 			return false;
 		}
@@ -92,9 +86,7 @@ export default class NotePathBuilder {
 
 	private getWeeklyAnchor(jy: number, weekNumber: number, anchor: TWeekPathAnchor) {
 		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
-		return anchor === "end"
-			? calculator.getEndOfWeek(jy, weekNumber)
-			: calculator.getStartOfWeek(jy, weekNumber);
+		return anchor === "end" ? calculator.getEndOfWeek(jy, weekNumber) : calculator.getStartOfWeek(jy, weekNumber);
 	}
 
 	private getDailyWeekContext(jy: number, jm: number, jd: number) {
@@ -102,34 +94,24 @@ export default class NotePathBuilder {
 		const date = jalaliToDate(jy, jm, jd);
 		const { jy: weekYear, weekNumber } = calculator.getWeekNumber(date);
 		const actualGregorian = jalaliToGregorian(jy, jm, jd);
-		const actualCalendarYear = this.plugin.setting.weekCalculation.startsWith("gregorian")
-			? actualGregorian.gy
-			: jy;
+		const actualCalendarYear = this.plugin.setting.weekCalculation.startsWith("gregorian") ? actualGregorian.gy : jy;
 		const nextYearWeekStart = calculator.getStartOfWeek(weekYear + 1, 1);
 		const nextYearWeekStartKey = nextYearWeekStart.gy * 10000 + nextYearWeekStart.gm * 100 + nextYearWeekStart.gd;
 		const actualDateKey = actualGregorian.gy * 10000 + actualGregorian.gm * 100 + actualGregorian.gd;
-
-		if (actualCalendarYear === weekYear && actualDateKey >= nextYearWeekStartKey) {
-			return { weekYear: weekYear + 1, weekNumber: 1 };
-		}
-
+		if (actualCalendarYear === weekYear && actualDateKey >= nextYearWeekStartKey) return { weekYear: weekYear + 1, weekNumber: 1 };
 		return { weekYear, weekNumber };
 	}
 
 	public buildDailyNoteFileName(jy: number, jm: number, jd: number) {
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
-		const context = this.buildEngineContext({ jy, jm, jd, gy, gm, gd });
-		return formatPattern(this.plugin.setting.dailyNoteFormat, context);
+		return formatPattern(this.plugin.setting.dailyNoteFormat, this.buildEngineContext({ jy, jm, jd, gy, gm, gd }));
 	}
 
 	public buildDailyNotePath(jy: number, jm: number, jd: number) {
 		const dateString = this.buildDailyNoteFileName(jy, jm, jd);
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
 		const { weekNumber } = this.getDailyWeekContext(jy, jm, jd);
-		const notesLocation = this.plugin.setting.dailyNotesPath;
-		const filePath = this.buildNotePath(notesLocation, `${dateString}.md`, {
-			jy, jm, jd, gy, gm, gd, week: weekNumber,
-		});
+		const filePath = this.buildNotePath(this.plugin.setting.dailyNotesPath, `${dateString}.md`, { jy, jm, jd, gy, gm, gd, week: weekNumber });
 		return { filePath, dateString };
 	}
 
@@ -137,10 +119,7 @@ export default class NotePathBuilder {
 		const anchor = this.plugin.setting.weeklyPathAnchor ?? "start";
 		const { jy: jYear, jm, jd, gy, gm, gd } = this.getWeeklyAnchor(jy, weekNumber, anchor);
 		const fileName = `${toWeekFormat(jy, weekNumber)}.md`;
-		const notesLocation = this.plugin.setting.weeklyNotesPath;
-		const filePath = this.buildNotePath(notesLocation, fileName, {
-			jy: jYear, jm, jd, gy, gm, gd, week: weekNumber,
-		});
+		const filePath = this.buildNotePath(this.plugin.setting.weeklyNotesPath, fileName, { jy: jYear, jm, jd, gy, gm, gd, week: weekNumber });
 		return { filePath, fileName };
 	}
 
@@ -150,13 +129,9 @@ export default class NotePathBuilder {
 		if (this.plugin.setting.monthlyNoteNaming === "gregorian") {
 			const { year, month } = mapJalaliMonthToGregorianLabel(jy, jm);
 			fileName = `${formatPattern("YYYY-MM", { gy: year, gm: month })}.md`;
-		} else {
-			fileName = `${formatPattern("jYYYY-jMM", { jy, jm })}.md`;
-		}
-		const notesLocation = this.plugin.setting.monthlyNotesPath;
-		const filePath = this.buildNotePath(notesLocation, fileName, { jy, jm, gy, gm, gd });
-		const jMonthName = JALALI_MONTHS_NAME[local][jm];
-		return { filePath, fileName, jMonthName };
+		} else fileName = `${formatPattern("jYYYY-jMM", { jy, jm })}.md`;
+		const filePath = this.buildNotePath(this.plugin.setting.monthlyNotesPath, fileName, { jy, jm, gy, gm, gd });
+		return { filePath, fileName, jMonthName: JALALI_MONTHS_NAME[local][jm] };
 	}
 
 	public buildSeasonalNotePath(jy: number, seasonNumber: number, local: TLocale = "fa") {
@@ -164,10 +139,8 @@ export default class NotePathBuilder {
 		const jm = 3 * (seasonNumber - 1) + 1;
 		const jd = 1;
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
-		const notesLocation = this.plugin.setting.seasonalNotesPath;
-		const filePath = this.buildNotePath(notesLocation, fileName, { jy, jm, jd, gy, gm, gd, season: seasonNumber });
-		const seasonName = SEASONS_NAME[local][seasonNumber];
-		return { filePath, fileName, seasonName };
+		const filePath = this.buildNotePath(this.plugin.setting.seasonalNotesPath, fileName, { jy, jm, jd, gy, gm, gd, season: seasonNumber });
+		return { filePath, fileName, seasonName: SEASONS_NAME[local][seasonNumber] };
 	}
 
 	public buildYearlyNotePath(jy: number) {
@@ -178,11 +151,8 @@ export default class NotePathBuilder {
 		if (this.plugin.setting.yearlyNoteNaming === "gregorian") {
 			const { year } = mapJalaliYearToGregorianLabel(jy);
 			fileName = `${formatPattern("YYYY", { gy: year })}.md`;
-		} else {
-			fileName = `${formatPattern("jYYYY", { jy })}.md`;
-		}
-		const notesLocation = this.plugin.setting.yearlyNotesPath;
-		const filePath = this.buildNotePath(notesLocation, fileName, { jy, jm, jd, gy, gm, gd });
+		} else fileName = `${formatPattern("jYYYY", { jy })}.md`;
+		const filePath = this.buildNotePath(this.plugin.setting.yearlyNotesPath, fileName, { jy, jm, jd, gy, gm, gd });
 		return { filePath, fileName };
 	}
 
