@@ -138,22 +138,24 @@ export default class NotePathBuilder {
 
 	public buildDailyNoteFileName(jy: number, jm: number, jd: number) {
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
-
-		return formatPattern(this.plugin.setting.dailyNoteFormat, this.buildEngineContext({
+		const context = this.buildEngineContext({
 			jy,
 			jm,
 			jd,
 			gy,
 			gm,
 			gd,
-		}));
+		});
+
+		return formatPattern(this.plugin.setting.dailyNoteFormat, context);
 	}
 
 	public buildDailyNotePath(jy: number, jm: number, jd: number) {
 		const dateString = this.buildDailyNoteFileName(jy, jm, jd);
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
 		const { weekNumber } = this.getDailyWeekContext(jy, jm, jd);
-		const filePath = this.buildNotePath(this.plugin.setting.dailyNotesPath, `${dateString}.md`, {
+		const notesLocation = this.plugin.setting.dailyNotesPath;
+		const filePath = this.buildNotePath(notesLocation, `${dateString}.md`, {
 			jy,
 			jm,
 			jd,
@@ -170,7 +172,9 @@ export default class NotePathBuilder {
 		const anchor = this.plugin.setting.weeklyPathAnchor ?? "start";
 		const { jy: jYear, jm, jd, gy, gm, gd } = this.getWeeklyAnchor(jy, weekNumber, anchor);
 		const fileName = `${toWeekFormat(jy, weekNumber)}.md`;
-		const filePath = this.buildNotePath(this.plugin.setting.weeklyNotesPath, fileName, {
+
+		const notesLocation = this.plugin.setting.weeklyNotesPath;
+		const filePath = this.buildNotePath(notesLocation, fileName, {
 			jy: jYear,
 			jm,
 			jd,
@@ -195,7 +199,8 @@ export default class NotePathBuilder {
 			fileName = `${formatPattern("jYYYY-jMM", { jy, jm })}.md`;
 		}
 
-		const filePath = this.buildNotePath(this.plugin.setting.monthlyNotesPath, fileName, {
+		const notesLocation = this.plugin.setting.monthlyNotesPath;
+		const filePath = this.buildNotePath(notesLocation, fileName, {
 			jy,
 			jm,
 			gy,
@@ -203,15 +208,22 @@ export default class NotePathBuilder {
 			gd,
 		});
 
-		return { filePath, fileName, jMonthName: JALALI_MONTHS_NAME[local][jm] };
+		const jMonthName = JALALI_MONTHS_NAME[local][jm];
+
+		return { filePath, fileName, jMonthName };
 	}
 
 	public buildSeasonalNotePath(jy: number, seasonNumber: number, local: TLocale = "fa") {
-		const fileName = `${formatPattern("jYYYY-[S]jQ", { jy, season: seasonNumber })}.md`;
+		const fileName = `${formatPattern("jYYYY-[S]jQ", {
+			jy,
+			season: seasonNumber,
+		})}.md`;
 		const jm = 3 * (seasonNumber - 1) + 1;
 		const jd = 1;
 		const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
-		const filePath = this.buildNotePath(this.plugin.setting.seasonalNotesPath, fileName, {
+
+		const notesLocation = this.plugin.setting.seasonalNotesPath;
+		const filePath = this.buildNotePath(notesLocation, fileName, {
 			jy,
 			jm,
 			jd,
@@ -221,7 +233,9 @@ export default class NotePathBuilder {
 			season: seasonNumber,
 		});
 
-		return { filePath, fileName, seasonName: SEASONS_NAME[local][seasonNumber] };
+		const seasonName = SEASONS_NAME[local][seasonNumber];
+
+		return { filePath, fileName, seasonName };
 	}
 
 	public buildYearlyNotePath(jy: number) {
@@ -238,7 +252,8 @@ export default class NotePathBuilder {
 			fileName = `${formatPattern("jYYYY", { jy })}.md`;
 		}
 
-		const filePath = this.buildNotePath(this.plugin.setting.yearlyNotesPath, fileName, {
+		const notesLocation = this.plugin.setting.yearlyNotesPath;
+		const filePath = this.buildNotePath(notesLocation, fileName, {
 			jy,
 			jm,
 			jd,
