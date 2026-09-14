@@ -86,12 +86,12 @@ export default class NotePathBuilder {
 		return resolved ? `${resolved}/${fileName}` : fileName;
 	}
 
-	public weeklyPathNeedsAnchor(): boolean {
-		const path = this.normalizeFolderPath(this.plugin.setting.weeklyNotesPath);
-		if (!path) return false;
+	public weeklyPathNeedsAnchor(path?: string): boolean {
+		const normalizedPath = this.normalizeFolderPath(path ?? this.plugin.setting.weeklyNotesPath);
+		if (!normalizedPath) return false;
 
 		try {
-			const pathSegments = path.split("/");
+			const pathSegments = normalizedPath.split("/");
 			const segmentFields = pathSegments.map((segment) =>
 				tokenize(segment, defaultTokenRegistry)
 					.filter((part) => part.type === "token")

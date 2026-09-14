@@ -27,8 +27,8 @@ export function getPathSettings(plugin: PersianCalendarPlugin): SettingDefinitio
 				});
 			});
 
-			const updateVisibility = () => {
-				const visible = new NotePathBuilder(plugin).weeklyPathNeedsAnchor();
+			const updateVisibility = (path?: string) => {
+				const visible = new NotePathBuilder(plugin).weeklyPathNeedsAnchor(path);
 				setting.settingEl.style.display = visible ? "flex" : "none";
 			};
 
@@ -39,8 +39,10 @@ export function getPathSettings(plugin: PersianCalendarPlugin): SettingDefinitio
 			const weeklyInput = weeklySettingEl.querySelector("input");
 			if (!weeklyInput) return;
 
-			weeklyInput.addEventListener("blur", updateVisibility);
-			weeklyInput.addEventListener("change", updateVisibility);
+			const updateFromInput = () => updateVisibility(weeklyInput.value);
+			weeklyInput.addEventListener("input", updateFromInput);
+			weeklyInput.addEventListener("change", updateFromInput);
+			weeklyInput.addEventListener("blur", updateFromInput);
 		},
 	};
 
