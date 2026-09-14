@@ -19,64 +19,19 @@ export type TGetGregorianDayOfWeek = { gYear: number; gWeekNumber: number };
 export type TDateFormat = "jalali" | "gregorian" | "hijri";
 export type THijriBase = "iran" | "umalqura";
 export type TDateFormatWithoutHijri = Exclude<TDateFormat, "hijri">;
-export type TShowEvents = {
-	showIROfficialEvents?: boolean;
-	showIRHistoricalEvents?: boolean;
-	showIRAncientEvents?: boolean;
-	showShiaEvents?: boolean;
-	showSunniEvents?: boolean;
-	showGlobalEvents?: boolean;
-};
+export type TShowEvents = { showIROfficialEvents?: boolean; showIRHistoricalEvents?: boolean; showIRAncientEvents?: boolean; showShiaEvents?: boolean; showSunniEvents?: boolean; showGlobalEvents?: boolean };
 export type THijriAnchor = TGregorian & THijri;
-
-export type TBoolSettingKeys = Extract<
-	keyof TSetting,
-	| "showSeasonalNotes" | "showGeorgianDates" | "showHijriDates" | "showHolidays"
-	| "showIROfficialEvents" | "showIRHistoricalEvents" | "showIRAncientEvents"
-	| "showShiaEvents" | "showSunniEvents" | "showGlobalEvents"
-	| "askForCreateNote" | "openDailyNoteOnStartup"
->;
-
-export type TWeekDays = {
-	saturday: boolean; sunday: boolean; monday: boolean; tuesday: boolean;
-	wednesday: boolean; thursday: boolean; friday: boolean;
-};
+export type TBoolSettingKeys = Extract<keyof TSetting, "showSeasonalNotes" | "showGeorgianDates" | "showHijriDates" | "showHolidays" | "showIROfficialEvents" | "showIRHistoricalEvents" | "showIRAncientEvents" | "showShiaEvents" | "showSunniEvents" | "showGlobalEvents" | "askForCreateNote" | "openDailyNoteOnStartup">;
+export type TWeekDays = { saturday: boolean; sunday: boolean; monday: boolean; tuesday: boolean; wednesday: boolean; thursday: boolean; friday: boolean };
 
 export type TSetting = {
-	lastSeenVersion?: string;
-	legacyPathPatternsMigrated?: boolean;
-	language: TLocale;
-	versionUpdate: boolean;
-	askForCreateNote: boolean;
-	openDailyNoteOnStartup: boolean;
-	dateFormat: TDateFormatWithoutHijri;
-	monthlyNoteNaming: TDateFormatWithoutHijri;
-	yearlyNoteNaming: TDateFormatWithoutHijri;
-	dailyNoteFormat: string;
-	weekCalculation: TWeekCalculationMode;
-	weeklyPathAnchor: TWeekPathAnchor;
-	showSeasonalNotes: boolean;
-	showHolidays: boolean;
-	weekendDays: TWeekDays;
-	hijriBase: THijriBase;
-	showGeorgianDates: boolean;
-	showHijriDates: boolean;
-	dailyNotesPath: string;
-	weeklyNotesPath: string;
-	monthlyNotesPath: string;
-	seasonalNotesPath: string;
-	yearlyNotesPath: string;
-	dailyTemplatePath: string;
-	weeklyTemplatePath: string;
-	monthlyTemplatePath: string;
-	seasonalTemplatePath: string;
-	yearlyTemplatePath: string;
-	showIROfficialEvents: boolean;
-	showIRHistoricalEvents: boolean;
-	showIRAncientEvents: boolean;
-	showShiaEvents: boolean;
-	showSunniEvents: boolean;
-	showGlobalEvents: boolean;
+	lastSeenVersion?: string; legacyPathPatternsMigrated?: boolean; language: TLocale; versionUpdate: boolean; askForCreateNote: boolean; openDailyNoteOnStartup: boolean;
+	dateFormat: TDateFormatWithoutHijri; monthlyNoteNaming: TDateFormatWithoutHijri; yearlyNoteNaming: TDateFormatWithoutHijri; dailyNoteFormat: string;
+	weekCalculation: TWeekCalculationMode; weeklyPathAnchor: TWeekPathAnchor; showSeasonalNotes: boolean; showHolidays: boolean; weekendDays: TWeekDays;
+	hijriBase: THijriBase; showGeorgianDates: boolean; showHijriDates: boolean;
+	dailyNotesPath: string; weeklyNotesPath: string; monthlyNotesPath: string; seasonalNotesPath: string; yearlyNotesPath: string;
+	dailyTemplatePath: string; weeklyTemplatePath: string; monthlyTemplatePath: string; seasonalTemplatePath: string; yearlyTemplatePath: string;
+	showIROfficialEvents: boolean; showIRHistoricalEvents: boolean; showIRAncientEvents: boolean; showShiaEvents: boolean; showSunniEvents: boolean; showGlobalEvents: boolean;
 };
 
 type KeysOfType<V> = { [K in keyof TSetting]-?: TSetting[K] extends V ? K : never }[keyof TSetting];
@@ -89,7 +44,7 @@ export type TSuggestProvider = { trigger: RegExp; getSuggestions: (query: string
 export type TReleaseNote = { version: string; changes: { fa: string[]; en: string[] } };
 export type TSocialLink = { href: string; title: string; icon: string };
 export type TCalendarFamily = "gregorian" | "jalali";
-export type TDateEngineContext = { gy?: number; gm?: number; gd?: number; jy?: number; jm?: number; jd?: number; week?: number; season?: number; quarter?: number };
+export type TDateEngineContext = { gy?: number; gm?: number; gd?: number; jy?: number; jm?: number; jd?: number; week?: number; season?: number; quarter?: number; dow?: number };
 export type TTokenField = keyof TDateEngineContext;
 export type TTokenDefinition = { token: string; family: TCalendarFamily; field: TTokenField; format: (ctx: TDateEngineContext) => string | null; regexFragment: (locale: TLocale) => string; parseValue: (raw: string) => number | null };
 export type TPatternSegment = { type: "literal"; value: string; escaped?: boolean } | { type: "token"; token: TTokenDefinition };
