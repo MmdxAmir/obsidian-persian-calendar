@@ -25,19 +25,25 @@ export function getPathSettings(plugin: PersianCalendarPlugin): SettingDefinitio
 		},
 	};
 
-	return [{
-		type: "group",
-		heading: t("setting.sections.paths"),
-		items: NOTE_TYPES.flatMap((noteType) => {
-			const pathSetting = {
-				name: t(noteType.pathNameKey),
-				desc: t(noteType.pathDescKey),
-				control: { type: "folder" as const, key: noteType.pathKey, includeRoot: true },
-			};
+	return [
+		{
+			type: "group",
+			heading: t("setting.sections.paths"),
+			items: NOTE_TYPES.flatMap((noteType) => {
+				const pathSetting = {
+					name: t(noteType.pathNameKey),
+					desc: t(noteType.pathDescKey),
+					control: {
+						type: "folder" as const,
+						key: noteType.pathKey,
+						includeRoot: true,
+					},
+				};
 
-			return noteType.id === "weekly"
-				? [pathSetting, weeklyAnchorSetting]
-				: [pathSetting];
-		}),
-	}];
+				return noteType.id === "weekly"
+					? [pathSetting, weeklyAnchorSetting]
+					: [pathSetting];
+			}),
+		},
+	];
 }
