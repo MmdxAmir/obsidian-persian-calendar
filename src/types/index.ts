@@ -91,6 +91,7 @@ export type TSetting = {
 	dailyNoteFormat: string;
 	weekCalculation: TWeekCalculationMode;
 	weeklyPathAnchor: TWeekPathAnchor;
+	weeklyPathYearBoundaryAnchor: TWeekPathAnchor;
 	showSeasonalNotes: boolean;
 	// show holidays
 	showHolidays: boolean;

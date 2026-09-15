@@ -20,6 +20,21 @@ export function getPathSettings(plugin: PersianCalendarPlugin): SettingDefinitio
 		},
 	};
 
+	const weeklyYearBoundaryAnchorSetting = {
+		name: "مبنای هفتهٔ مرزی سال",
+		desc: "برای هفته‌ای که بین دو سال قرار می‌گیرد، تاریخ مسیر از ابتدای هفته یا انتهای هفته محاسبه می‌شود.",
+		visible: () => new NotePathBuilder(plugin).weeklyPathNeedsYearBoundaryAnchor(),
+		control: {
+			type: "dropdown" as const,
+			key: "weeklyPathYearBoundaryAnchor",
+			options: {
+				start: "ابتدای هفته",
+				end: "انتهای هفته",
+			},
+			defaultValue: "start",
+		},
+	};
+
 	return [
 		{
 			type: "group",
@@ -36,7 +51,7 @@ export function getPathSettings(plugin: PersianCalendarPlugin): SettingDefinitio
 				};
 
 				return noteType.id === "weekly"
-					? [pathSetting, weeklyAnchorSetting]
+					? [pathSetting, weeklyAnchorSetting, weeklyYearBoundaryAnchorSetting]
 					: [pathSetting];
 			}),
 		},

@@ -108,10 +108,33 @@ export default class NotePathBuilder {
 		}
 	}
 
+	public weeklyPathNeedsYearBoundaryAnchor(path?: string): boolean {
+		const weekCalculation = this.plugin.setting.weekCalculation;
+		if (!weekCalculation.endsWith("first-week-start")) return false;
+
+		return this.weeklyPathNeedsAnchor(path);
+	}
+
+	private isCrossYearFirstFullWeek(jy: number, weekNumber: number) {
+		const weekCalculation = this.plugin.setting.weekCalculation;
+		if (!weekCalculation.endsWith("first-week-start")) return false;
+
+		const calculator = getWeekStartCalculator(weekCalculation);
+		const start = calculator.getStartOfWeek(jy, weekNumber);
+		const end = calculator.getEndOfWeek(jy, weekNumber);
+
+		return weekCalculation.startsWith("gregorian")
+			? start.gy !== end.gy
+			: start.jy !== end.jy;
+	}
+
 	private getWeeklyAnchor(jy: number, weekNumber: number, anchor: TWeekPathAnchor) {
 		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
+		const effectiveAnchor = this.isCrossYearFirstFullWeek(jy, weekNumber)
+			? this.plugin.setting.weeklyPathYearBoundaryAnchor ?? "start"
+			: anchor;
 
-		return anchor === "end"
+		return effectiveAnchor === "end"
 			? calculator.getEndOfWeek(jy, weekNumber)
 			: calculator.getStartOfWeek(jy, weekNumber);
 	}
