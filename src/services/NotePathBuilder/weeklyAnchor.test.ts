@@ -8,12 +8,17 @@ const makePlugin = (
 	weeklyNotesPath: string,
 	weeklyPathAnchor: "start" | "end" = "start",
 	weekCalculation: TSetting["weekCalculation"] = "jalali-first-day-of-year",
+	weeklyPathYearBoundaryAnchor: "start" | "end" = "start",
 ) => ({
 	setting: {
 		weeklyNotesPath,
 		weeklyPathAnchor,
 		weekCalculation,
-	} as Pick<TSetting, "weeklyNotesPath" | "weeklyPathAnchor" | "weekCalculation">,
+		weeklyPathYearBoundaryAnchor,
+	} as Pick<
+		TSetting,
+		"weeklyNotesPath" | "weeklyPathAnchor" | "weekCalculation" | "weeklyPathYearBoundaryAnchor"
+	>,
 } as never);
 
 describe("Weekly path anchor visibility", () => {
@@ -61,6 +66,27 @@ describe("Weekly path anchor visibility", () => {
 
 	it("recognizes mixed Jalali and Gregorian date tokens", () => {
 		expect(new NotePathBuilder(makePlugin("YYYY/jMM/QQQQ/ww")).weeklyPathNeedsAnchor()).toBe(true);
+	});
+
+	it("shows the year-boundary Anchor only for first-full-week calculations with an eligible date field", () => {
+		const builder = new NotePathBuilder(makePlugin("YYYY/ww", "start", "jalali-first-week-start"));
+		expect(builder.weeklyPathNeedsYearBoundaryAnchor()).toBe(true);
+
+		expect(
+			new NotePathBuilder(makePlugin("YYYY/ww", "start", "jalali-first-day-of-year"))
+				.weeklyPathNeedsYearBoundaryAnchor(),
+		).toBe(false);
+		expect(
+			new NotePathBuilder(makePlugin("ww", "start", "jalali-first-week-start"))
+				.weeklyPathNeedsYearBoundaryAnchor(),
+		).toBe(false);
+	});
+
+	it("shows the year-boundary Anchor for Gregorian first-full-week calculations", () => {
+		expect(
+			new NotePathBuilder(makePlugin("YYYY/ww", "start", "gregorian-first-week-start"))
+				.weeklyPathNeedsYearBoundaryAnchor(),
+		).toBe(true);
 	});
 });
 
@@ -110,6 +136,56 @@ describe("Weekly path anchor resolution", () => {
 
 		expect(start.filePath).toContain("2026/Spring/");
 		expect(end.filePath).toContain("2026/Summer/");
+	});
+
+	it("uses the configured anchor for a Jalali cross-year first-full week", () => {
+		const calc = getWeekStartCalculator("jalali-first-week-start");
+		let weekNumber = 0;
+		for (let candidate = 1; candidate <= 53; candidate++) {
+			const start = calc.getStartOfWeek(1404, candidate);
+			const end = calc.getEndOfWeek(1404, candidate);
+			if (start.jy !== end.jy) {
+				weekNumber = candidate;
+				break;
+			}
+		}
+
+		expect(weekNumber).not.toBe(0);
+
+		const start = new NotePathBuilder(
+			makePlugin("jYYYY/jMM/ww", "end", "jalali-first-week-start", "start"),
+		).buildWeeklyNotePath(1404, weekNumber);
+		const end = new NotePathBuilder(
+			makePlugin("jYYYY/jMM/ww", "start", "jalali-first-week-start", "end"),
+		).buildWeeklyNotePath(1404, weekNumber);
+
+		expect(start.filePath).toBe(end.filePath);
+		expect(start.filePath).toContain("1404/");
+	});
+
+	it("uses the configured anchor for a Gregorian cross-year first-full week", () => {
+		const calc = getWeekStartCalculator("gregorian-first-week-start");
+		let weekNumber = 0;
+		for (let candidate = 1; candidate <= 53; candidate++) {
+			const start = calc.getStartOfWeek(2025, candidate);
+			const end = calc.getEndOfWeek(2025, candidate);
+			if (start.gy !== end.gy) {
+				weekNumber = candidate;
+				break;
+			}
+		}
+
+		expect(weekNumber).not.toBe(0);
+
+		const start = new NotePathBuilder(
+			makePlugin("YYYY/QQQQ/ww", "end", "gregorian-first-week-start", "start"),
+		).buildWeeklyNotePath(2025, weekNumber);
+		const end = new NotePathBuilder(
+			makePlugin("YYYY/QQQQ/ww", "start", "gregorian-first-week-start", "end"),
+		).buildWeeklyNotePath(2025, weekNumber);
+
+		expect(start.filePath).toBe(end.filePath);
+		expect(start.filePath).toContain("2025/");
 	});
 });
 
