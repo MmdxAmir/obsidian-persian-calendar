@@ -296,7 +296,7 @@ pcApi.hijriToDate(1448, 6, 24, { base: "umalqura" }); // Date
 pcApi.hijriToGregorian(1448, 6, 24, { base: "umalqura" }); // {gy: 2026, gm: 12, gd: 4}
 pcApi.hijriToJalali(1448, 6, 24, { base: "umalqura" }); // {jy: 1405, jm: 9, jd: 13}
 
-// مناسبت‌ها 
+// مناسبت‌ها
 pcApi.checkHoliday(new Date()); // آیا روز تعطیل است؟ true/false
 pcApi.dateToEvents(new Date()); // آرایه‌ای از {title(fa/en), categories, isHolidayInIran}
 pcApi.dateToEvents(new Date(), { base: "umalqura" }); // با مبنای ام‌القری
