@@ -94,7 +94,7 @@ For weeks that cross a calendar-year boundary while using a **first full week** 
 end of that week. This applies only to the boundary week; other weeks continue to use the normal weekly
 path date anchor.
 
-For example, with a path such as `YYYY/jQQQQ/MM/[W]ww`, the year, season, and month are resolved from
+For example, with a path such as `jYYYY/jQQQQ/MM/[W]ww`, the year, season, and month are resolved from
 the selected weekly anchor while `[W]` remains a literal folder name. A cross-year boundary week can
 therefore be placed consistently under either the year in which it starts or the year in which it ends.
 
