@@ -1,4 +1,5 @@
 .persian-calendar__calendar {
+	direction: rtl;
 	display: flex;
 	flex-direction: column;
 	margin: 0 auto;

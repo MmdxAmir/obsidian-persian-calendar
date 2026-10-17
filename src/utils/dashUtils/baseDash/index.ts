@@ -6,6 +6,7 @@ import {
 	dateToJalali,
 	gregorianToDate,
 	gregorianToJalali,
+	jalaliToDate,
 	jalaliToGregorian,
 } from "src/utils/dateUtils";
 import { extractDayFormat, isDayFormat, toDayFormat } from "src/utils/formatters";
@@ -126,7 +127,6 @@ export function jalaliDashToDate(dashDate: string): Date | null {
 	const jm = dayProps.month;
 	const jd = dayProps.day;
 
-	const { gy, gm, gd } = jalaliToGregorian(jy, jm, jd);
-
-	return new Date(gy, gm - 1, gd);
+	// Match jalaliToDate / todayTehran (UTC noon). Local midnight breaks week day-math on Asia/Tehran.
+	return jalaliToDate(jy, jm, jd);
 }

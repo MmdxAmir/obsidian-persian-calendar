@@ -3,6 +3,19 @@ import type { TReleaseNote } from "src/types";
 //! ترتیب مهمه - جدیدترین ورژن ابتدا قرار میگیره
 export const RELEASE_NOTES: TReleaseNote[] = [
 	{
+		version: "4.9.8",
+		changes: {
+			fa: [
+				"برطرف کردن باگ شماره‌ی هفته با روزنوشت شمسی",
+				"برطرف کردن باگ جهت‌نما در هنگامه‌ی همزبانی با برنامه‌ی ابسیدین",
+			],
+			en: [
+				"Fix the week number bug with Jalali daily notes",
+				"Fix the direction indicator when syncing with Obsidian's language",
+			],
+		},
+	},
+	{
 		version: "4.9.7",
 		changes: {
 			fa: ["اصلاح و بهبود نمایش خطای نمایش تقویم در زبان انگلیسی"],

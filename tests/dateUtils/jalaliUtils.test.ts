@@ -26,6 +26,7 @@ import {
 	jalaliToEndDayOfWeek,
 	jalaliToGregorian,
 	jalaliToJWeekNumber,
+	jalaliToJWeekNumberFromFirstWeekStart,
 	jalaliToStartDayOfWeek,
 	jalaliToStartWeek,
 } from "src/utils/dateUtils/jalaliUtils";
@@ -201,6 +202,34 @@ describe("jalaliToJWeekNumber", () => {
 	it("should return 1 for the first week of the year", () => {
 		// 1403/01/01 should be week 1
 		expect(jalaliToJWeekNumber(1403, 1, 1)).toBe(1);
+	});
+});
+
+describe("jalaliToJWeekNumberFromFirstWeekStart", () => {
+	it("attributes days before the first weekStart to the previous year", () => {
+		// 1404 week 1 starts on 1404-01-02 (Saturday); 1404-01-01 is still 1403-W52
+		expect(jalaliToJWeekNumberFromFirstWeekStart(jalaliToDate(1404, 1, 1))).toEqual({
+			jy: 1403,
+			weekNumber: 52,
+		});
+		expect(jalaliToJWeekNumberFromFirstWeekStart(jalaliToDate(1404, 1, 2))).toEqual({
+			jy: 1404,
+			weekNumber: 1,
+		});
+	});
+
+	it("keeps a Nowruz Saturday in week 1 of the new year", () => {
+		expect(jalaliToJWeekNumberFromFirstWeekStart(jalaliToDate(1405, 1, 1))).toEqual({
+			jy: 1405,
+			weekNumber: 1,
+		});
+	});
+
+	it("returns week 31 for 1405-07-25 (Saturday week boundary)", () => {
+		expect(jalaliToJWeekNumberFromFirstWeekStart(jalaliToDate(1405, 7, 25))).toEqual({
+			jy: 1405,
+			weekNumber: 31,
+		});
 	});
 });
 
