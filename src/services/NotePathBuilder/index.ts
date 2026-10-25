@@ -1,7 +1,9 @@
 import { JALALI_MONTHS_NAME, SEASONS_NAME } from "src/constants";
 import type PersianCalendarPlugin from "src/main";
 import type { TDateEngineContext, TLocale } from "src/types";
-import { formatPattern, tokenize, defaultTokenRegistry } from "src/utils/dateEngine";
+import { formatPattern } from "src/utils/dateEngine";
+import { tokenize } from "src/utils/dateEngine/tokenizer";
+import { defaultTokenRegistry } from "src/utils/dateEngine/tokens";
 import {
 	getWeekStartCalculator,
 	gregorianDayOfWeek,
