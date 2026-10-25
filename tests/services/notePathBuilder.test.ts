@@ -122,3 +122,18 @@ describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
 		);
 	});
 });
+
+
+describe("weekly path month choice", () => {
+	it("detects only month/season tokens before the week token", () => {
+		const b = createBuilder();
+		expect(b.weeklyPathNeedsMonthChoice("jYYYY/jMM/[W]ww")).toBe(true);
+		expect(b.weeklyPathNeedsMonthChoice("jYYYY/jQQQQ/[W]ww")).toBe(true);
+		expect(b.weeklyPathNeedsMonthChoice("jYYYY/[W]ww/jMM")).toBe(false);
+		expect(b.weeklyPathNeedsMonthChoice("jYYYY/[Weekly]")).toBe(false);
+	});
+	it("keeps the filename format unchanged", () => {
+		const b = createBuilder({ weeklyNotesPath: "jYYYY/jMM/[W]ww" });
+		expect(b.buildWeeklyNotePath(1403, 1).fileName).toBe("1403-W01.md");
+	});
+});

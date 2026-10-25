@@ -66,6 +66,11 @@
 				"desc": "Daily notes will be created in this folder."
 			},
 			"weekly": {
+				"monthBoundary": {
+					"name": "Week folder month boundary",
+					"desc": "Choose whether month and season folders use the week’s starting or ending date.",
+					"options": { "start": "Month of week start", "end": "Month of week end" }
+				},
 				"name": "Weekly Notes Folder",
 				"desc": "Weekly notes will be created in this folder."
 			},
