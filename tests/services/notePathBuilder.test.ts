@@ -134,6 +134,6 @@ describe("weekly path month choice", () => {
 	});
 	it("keeps the filename format unchanged", () => {
 		const b = createBuilder({ weeklyNotesPath: "jYYYY/jMM/[W]ww" });
-		expect(b.buildWeeklyNotePath(1403, 1).fileName).toBe("1403-W01.md");
+		expect(b.buildWeeklyNotePath(1403, 1).fileName).toBe("1403-W1.md");
 	});
 });

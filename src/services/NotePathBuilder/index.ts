@@ -73,11 +73,6 @@ export default class NotePathBuilder {
 		return resolved ? `${resolved}/${fileName}` : fileName;
 	}
 
-	private getWeeklyAnchor(jy: number, weekNumber: number) {
-		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
-		return calculator.getStartOfWeek(jy, weekNumber);
-	}
-
 	private getDailyWeekContext(jy: number, jm: number, jd: number) {
 		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
 		const date = jalaliToDate(jy, jm, jd);
@@ -133,11 +128,17 @@ export default class NotePathBuilder {
 
 	public weeklyPathNeedsMonthChoice(path = this.plugin.setting.weeklyNotesPath): boolean {
 		try {
-			const tokens = tokenize(this.normalizeFolderPath(path), defaultTokenRegistry).filter((part) => part.type === "token").map((part) => part.token);
+			const tokens = tokenize(this.normalizeFolderPath(path), defaultTokenRegistry)
+				.filter((part) => part.type === "token")
+				.map((part) => part.token);
 			const weekIndex = tokens.findIndex((token) => token.field === "week");
 			if (weekIndex <= 0) return false;
-			return tokens.slice(0, weekIndex).some((token) => ["jm", "gm", "season", "quarter"].includes(token.field));
-		} catch { return false; }
+			return tokens.slice(0, weekIndex).some((token) =>
+				["jm", "gm", "season", "quarter"].includes(token.field),
+			);
+		} catch {
+			return false;
+		}
 	}
 
 	public buildWeeklyNotePath(jy: number, weekNumber: number) {
@@ -146,7 +147,11 @@ export default class NotePathBuilder {
 		const end = calculator.getEndOfWeek(jy, weekNumber);
 		const anchor = this.plugin.setting.weeklyPathMonth === "end" ? end : start;
 		const isGregorianWeek = this.plugin.setting.weekCalculation.startsWith("gregorian");
-		const pathContext = this.buildEngineContext({ ...anchor, ...(isGregorianWeek ? { gy: jy } : { jy }), week: weekNumber });
+		const pathContext = this.buildEngineContext({
+			...anchor,
+			...(isGregorianWeek ? { gy: jy } : { jy }),
+			week: weekNumber,
+		});
 
 		const fileName = `${toWeekFormat(jy, weekNumber)}.md`;
 
