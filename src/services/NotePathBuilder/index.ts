@@ -2,8 +2,6 @@ import { JALALI_MONTHS_NAME, SEASONS_NAME } from "src/constants";
 import type PersianCalendarPlugin from "src/main";
 import type { TDateEngineContext, TLocale } from "src/types";
 import { formatPattern } from "src/utils/dateEngine";
-import { tokenize } from "src/utils/dateEngine/tokenizer";
-import { defaultTokenRegistry } from "src/utils/dateEngine/tokens";
 import {
 	getWeekStartCalculator,
 	gregorianDayOfWeek,
@@ -14,8 +12,6 @@ import {
 } from "src/utils/dateUtils";
 import { toWeekFormat } from "src/utils/formatters";
 import { mapJalaliMonthToGregorianLabel, mapJalaliYearToGregorianLabel } from "./gregorianNaming";
-
-const WEEK_PATH_DATE_FIELDS = new Set(["gy", "gm", "gd", "jy", "jm", "jd", "season", "quarter"]);
 
 export default class NotePathBuilder {
 	constructor(private readonly plugin: PersianCalendarPlugin) {}
@@ -75,46 +71,6 @@ export default class NotePathBuilder {
 		const resolved = this.resolveFolderPattern(basePath, tokenContext);
 
 		return resolved ? `${resolved}/${fileName}` : fileName;
-	}
-
-	public weeklyPathNeedsAnchor(path?: string): boolean {
-		const normalizedPath = this.normalizeFolderPath(path ?? this.plugin.setting.weeklyNotesPath);
-		if (!normalizedPath) return false;
-
-		try {
-			const pathSegments = normalizedPath.split("/");
-			const segmentFields = pathSegments.map((segment) =>
-				tokenize(segment, defaultTokenRegistry)
-					.filter((part) => part.type === "token")
-					.map((part) => part.token.field),
-			);
-			const weekSegmentIndex = segmentFields.findIndex((fields) => fields.includes("week"));
-			if (weekSegmentIndex <= 0) return false;
-
-			return segmentFields
-				.slice(0, weekSegmentIndex)
-				.some((fields) => fields.some((field) => WEEK_PATH_DATE_FIELDS.has(field)));
-		} catch {
-			return false;
-		}
-	}
-
-	public weeklyPathNeedsYearBoundaryAnchor(path?: string): boolean {
-		const weekCalculation = this.plugin.setting.weekCalculation;
-		if (!weekCalculation.endsWith("first-week-start")) return false;
-
-		return this.weeklyPathNeedsAnchor(path);
-	}
-
-	private isCrossYearFirstFullWeek(jy: number, weekNumber: number) {
-		const weekCalculation = this.plugin.setting.weekCalculation;
-		if (!weekCalculation.endsWith("first-week-start")) return false;
-
-		const calculator = getWeekStartCalculator(weekCalculation);
-		const start = calculator.getStartOfWeek(jy, weekNumber);
-		const end = calculator.getEndOfWeek(jy, weekNumber);
-
-		return weekCalculation.startsWith("gregorian") ? start.gy !== end.gy : start.jy !== end.jy;
 	}
 
 	private getWeeklyAnchor(jy: number, weekNumber: number) {
