@@ -17,18 +17,6 @@ export function getPathSettings(): SettingDefinitionItem[] {
 						includeRoot: true,
 					},
 				})),
-				{
-					name: t("setting.paths.weekly.monthBoundary.name"),
-					desc: t("setting.paths.weekly.monthBoundary.desc"),
-					control: {
-						type: "dropdown" as const,
-						key: "weeklyPathMonth",
-						options: {
-							start: t("setting.paths.weekly.monthBoundary.options.start"),
-							end: t("setting.paths.weekly.monthBoundary.options.end"),
-						},
-					},
-				},
 			],
 		},
 	];
