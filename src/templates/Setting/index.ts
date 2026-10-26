@@ -5,7 +5,6 @@ import { getDirection, onLocalChange, t } from "src/languages";
 import type PersianCalendarPlugin from "src/main";
 import { getEventSettings } from "./sections/EventSection";
 import { getExtraCalendarSettings } from "./sections/ExtraCalendarSection";
-import { getExtraWeeklyPathBoundarySettings } from "./sections/ExtraWeeklyPathBoundarySection";
 import { getGeneralSettings } from "./sections/GeneralSection";
 import { getHolidaySettings } from "./sections/HolidaySection";
 import { getNameSettings } from "./sections/NameSection";
@@ -65,7 +64,6 @@ export default class CalendarSettingTab extends PluginSettingTab {
 
 			...getGeneralSettings(),
 			...getPathSettings(),
-			...getExtraWeeklyPathBoundarySettings(),
 			...getNameSettings(),
 			...getTemplateSettings(),
 			...getExtraCalendarSettings(),

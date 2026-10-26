@@ -1,0 +1,375 @@
+diff --git a/src/languages/local/en.json b/src/languages/local/en.json
+index dda706c..56bd975 100644
+--- a/src/languages/local/en.json
++++ b/src/languages/local/en.json
+@@ -66,11 +66,6 @@
+ 				"desc": "Daily notes will be created in this folder."
+ 			},
+ 			"weekly": {
+-				"monthBoundary": {
+-					"name": "Week folder month boundary",
+-					"desc": "Choose whether month and season folders use the week’s starting or ending date.",
+-					"options": { "start": "Month of week start", "end": "Month of week end" }
+-				},
+ 				"name": "Weekly Notes Folder",
+ 				"desc": "Weekly notes will be created in this folder."
+ 			},
+@@ -108,6 +103,14 @@
+ 					"gregorianFirstWeekStart": "Based on the first full Gregorian week"
+ 				}
+ 			},
++			"weeklyPathMonth": {
++				"name": "Week folder month boundary",
++				"desc": "Choose whether the month and season in weekly folder paths come from the week’s start date or its end date. A week that spans two years always uses the year it belongs to. Existing notes are not moved.",
++				"options": {
++					"start": "Month of week start",
++					"end": "Month of week end"
++				}
++			},
+ 			"monthly": {
+ 				"name": "Monthly note naming",
+ 				"desc": "Choose how monthly note files are named and recognized.",
+diff --git a/src/languages/local/fa.json b/src/languages/local/fa.json
+index bffff65..0e8043b 100644
+--- a/src/languages/local/fa.json
++++ b/src/languages/local/fa.json
+@@ -66,11 +66,6 @@
+ 				"desc": "یادداشت‌های روزانه در این پوشه ساخته می‌شوند."
+ 			},
+ 			"weekly": {
+-				"monthBoundary": {
+-					"name": "مبنای ماه پوشهٔ هفته",
+-					"desc": "مشخص کنید پوشهٔ ماه یا فصل بر اساس تاریخ شروع هفته باشد یا تاریخ پایان آن.",
+-					"options": { "start": "ماه شروع هفته", "end": "ماه پایان هفته" }
+-				},
+ 				"name": "مسیر ذخیره هفته‌نوشت‌ها",
+ 				"desc": "یادداشت‌های هفتگی در این پوشه ساخته می‌شوند."
+ 			},
+@@ -106,6 +101,14 @@
+ 					"gregorianFirstWeekStart": "اولین هفته کامل میلادی"
+ 				}
+ 			},
++			"weeklyPathMonth": {
++				"name": "مبنای ماه پوشهٔ هفته",
++				"desc": "مشخص کنید ماه و فصل در مسیر پوشهٔ یادداشت‌های هفتگی بر اساس تاریخ شروع هفته باشد یا تاریخ پایان آن. هفته‌ای که بین دو سال است همیشه در سالی که به آن تعلق دارد قرار می‌گیرد. یادداشت‌های موجود جابه‌جا نمی‌شوند.",
++				"options": {
++					"start": "ماه شروع هفته",
++					"end": "ماه پایان هفته"
++				}
++			},
+ 			"monthly": {
+ 				"name": "نام‌گذاری ماه‌نوشت",
+ 				"desc": "نحوه‌ی نام‌گذاری و شناسایی فایل ماه‌نوشت را انتخاب کنید.",
+diff --git a/src/services/NotePathBuilder/index.ts b/src/services/NotePathBuilder/index.ts
+index 1e5f9f6..71fdb5c 100644
+--- a/src/services/NotePathBuilder/index.ts
++++ b/src/services/NotePathBuilder/index.ts
+@@ -2,8 +2,6 @@ import { JALALI_MONTHS_NAME, SEASONS_NAME } from "src/constants";
+ import type PersianCalendarPlugin from "src/main";
+ import type { TDateEngineContext, TLocale } from "src/types";
+ import { formatPattern } from "src/utils/dateEngine";
+-import { tokenize } from "src/utils/dateEngine/tokenizer";
+-import { defaultTokenRegistry } from "src/utils/dateEngine/tokens";
+ import {
+ 	getWeekStartCalculator,
+ 	gregorianDayOfWeek,
+@@ -75,6 +73,21 @@ export default class NotePathBuilder {
+ 		return resolved ? `${resolved}/${fileName}` : fileName;
+ 	}
+ 
++	private getWeeklyAnchor(jy: number, weekNumber: number) {
++		const { weekCalculation, weeklyPathMonth } = this.plugin.setting;
++		const calculator = getWeekStartCalculator(weekCalculation);
++		const start = calculator.getStartOfWeek(jy, weekNumber);
++		const end = calculator.getEndOfWeek(jy, weekNumber);
++		const isGregorian = weekCalculation.startsWith("gregorian");
++		const startYear = isGregorian ? start.gy : start.jy;
++		const endYear = isGregorian ? end.gy : end.jy;
++
++		// a week between two years stays in the year it belongs to
++		if (startYear !== endYear) return startYear === jy ? start : end;
++
++		return weeklyPathMonth === "end" ? end : start;
++	}
++
+ 	private getDailyWeekContext(jy: number, jm: number, jd: number) {
+ 		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
+ 		const date = jalaliToDate(jy, jm, jd);
+@@ -128,37 +141,21 @@ export default class NotePathBuilder {
+ 		return { filePath, dateString };
+ 	}
+ 
+-	public weeklyPathNeedsMonthChoice(path = this.plugin.setting.weeklyNotesPath): boolean {
+-		try {
+-			const tokens = tokenize(this.normalizeFolderPath(path), defaultTokenRegistry)
+-				.filter((part) => part.type === "token")
+-				.map((part) => part.token);
+-			const weekIndex = tokens.findIndex((token) => token.field === "week");
+-			if (weekIndex <= 0) return false;
+-			return tokens.slice(0, weekIndex).some((token) =>
+-				["jm", "gm", "season", "quarter"].includes(token.field),
+-			);
+-		} catch {
+-			return false;
+-		}
+-	}
+-
+ 	public buildWeeklyNotePath(jy: number, weekNumber: number) {
+-		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
+-		const start = calculator.getStartOfWeek(jy, weekNumber);
+-		const end = calculator.getEndOfWeek(jy, weekNumber);
+-		const anchor = this.plugin.setting.weeklyPathMonth === "end" ? end : start;
+-		const isGregorianWeek = this.plugin.setting.weekCalculation.startsWith("gregorian");
+-		const pathContext = this.buildEngineContext({
+-			...anchor,
+-			...(isGregorianWeek ? { gy: jy } : { jy }),
+-			week: weekNumber,
+-		});
++		const { jy: jYear, jm, jd, gy, gm, gd } = this.getWeeklyAnchor(jy, weekNumber);
+ 
+ 		const fileName = `${toWeekFormat(jy, weekNumber)}.md`;
+ 
+ 		const notesLocation = this.plugin.setting.weeklyNotesPath;
+-		const filePath = this.buildNotePath(notesLocation, fileName, pathContext);
++		const filePath = this.buildNotePath(notesLocation, fileName, {
++			jy: jYear,
++			jm,
++			jd,
++			gy,
++			gm,
++			gd,
++			week: weekNumber,
++		});
+ 
+ 		return { filePath, fileName };
+ 	}
+diff --git a/src/templates/Setting/index.ts b/src/templates/Setting/index.ts
+index aad08ae..719fc5e 100644
+--- a/src/templates/Setting/index.ts
++++ b/src/templates/Setting/index.ts
+@@ -5,7 +5,6 @@ import { getDirection, onLocalChange, t } from "src/languages";
+ import type PersianCalendarPlugin from "src/main";
+ import { getEventSettings } from "./sections/EventSection";
+ import { getExtraCalendarSettings } from "./sections/ExtraCalendarSection";
+-import { getExtraWeeklyPathBoundarySettings } from "./sections/ExtraWeeklyPathBoundarySection";
+ import { getGeneralSettings } from "./sections/GeneralSection";
+ import { getHolidaySettings } from "./sections/HolidaySection";
+ import { getNameSettings } from "./sections/NameSection";
+@@ -65,7 +64,6 @@ export default class CalendarSettingTab extends PluginSettingTab {
+ 
+ 			...getGeneralSettings(),
+ 			...getPathSettings(),
+-			...getExtraWeeklyPathBoundarySettings(),
+ 			...getNameSettings(),
+ 			...getTemplateSettings(),
+ 			...getExtraCalendarSettings(),
+diff --git a/src/templates/Setting/sections/ExtraWeeklyPathBoundarySection.ts b/src/templates/Setting/sections/ExtraWeeklyPathBoundarySection.ts
+deleted file mode 100644
+index 333921c..0000000
+--- a/src/templates/Setting/sections/ExtraWeeklyPathBoundarySection.ts
++++ /dev/null
+@@ -1,19 +0,0 @@
+-import type { SettingDefinitionItem } from "obsidian";
+-import { t } from "src/languages";
+-
+-export function getExtraWeeklyPathBoundarySettings(): SettingDefinitionItem[] {
+-	return [
+-		{
+-			name: t("setting.paths.weekly.monthBoundary.name"),
+-			desc: t("setting.paths.weekly.monthBoundary.desc"),
+-			control: {
+-				type: "dropdown",
+-				key: "weeklyPathMonth",
+-				options: {
+-					start: t("setting.paths.weekly.monthBoundary.options.start"),
+-					end: t("setting.paths.weekly.monthBoundary.options.end"),
+-				},
+-			},
+-		},
+-	];
+-}
+diff --git a/src/templates/Setting/sections/NameSection.ts b/src/templates/Setting/sections/NameSection.ts
+index d5a6018..a4e7a8d 100644
+--- a/src/templates/Setting/sections/NameSection.ts
++++ b/src/templates/Setting/sections/NameSection.ts
+@@ -43,6 +43,18 @@ export function getNameSettings(): SettingDefinitionItem[] {
+ 						},
+ 					},
+ 				},
++				{
++					name: t("setting.naming.weeklyPathMonth.name"),
++					desc: t("setting.naming.weeklyPathMonth.desc"),
++					control: {
++						type: "dropdown",
++						key: "weeklyPathMonth",
++						options: {
++							start: t("setting.naming.weeklyPathMonth.options.start"),
++							end: t("setting.naming.weeklyPathMonth.options.end"),
++						},
++					},
++				},
+ 				{
+ 					name: t("setting.naming.monthly.name"),
+ 					desc: t("setting.naming.monthly.desc"),
+diff --git a/src/templates/Setting/sections/PathSection.ts b/src/templates/Setting/sections/PathSection.ts
+index 96075ac..e0ebb15 100644
+--- a/src/templates/Setting/sections/PathSection.ts
++++ b/src/templates/Setting/sections/PathSection.ts
+@@ -7,17 +7,15 @@ export function getPathSettings(): SettingDefinitionItem[] {
+ 		{
+ 			type: "group",
+ 			heading: t("setting.sections.paths"),
+-			items: [
+-				...NOTE_TYPES.map((noteType) => ({
+-					name: t(noteType.pathNameKey),
+-					desc: t(noteType.pathDescKey),
+-					control: {
+-						type: "folder" as const,
+-						key: noteType.pathKey,
+-						includeRoot: true,
+-					},
+-				})),
+-			],
++			items: NOTE_TYPES.map((noteType) => ({
++				name: t(noteType.pathNameKey),
++				desc: t(noteType.pathDescKey),
++				control: {
++					type: "folder" as const,
++					key: noteType.pathKey,
++					includeRoot: true,
++				},
++			})),
+ 		},
+ 	];
+ }
+diff --git a/tests/services/notePathBuilder.test.ts b/tests/services/notePathBuilder.test.ts
+index 40a5f9a..a1cd811 100644
+--- a/tests/services/notePathBuilder.test.ts
++++ b/tests/services/notePathBuilder.test.ts
+@@ -5,6 +5,7 @@ import type { TSetting } from "src/types";
+ import { clearCompiledPatternCache } from "src/utils/dateEngine/compiler";
+ import { DatePatternFormatError } from "src/utils/dateEngine/errors";
+ import { formatPattern } from "src/utils/dateEngine/formatter";
++import { getWeekStartCalculator } from "src/utils/dateUtils";
+ 
+ beforeEach(() => {
+ 	clearCompiledPatternCache();
+@@ -123,17 +124,110 @@ describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
+ 	});
+ });
+ 
++describe("NotePathBuilder - weekly note folders at year boundaries", () => {
++	function weekly(
++		weekCalculation: TSetting["weekCalculation"],
++		weeklyNotesPath: string,
++		weeklyPathMonth: TSetting["weeklyPathMonth"],
++		year: number,
++		week: number,
++	) {
++		return createBuilder({ weekCalculation, weeklyNotesPath, weeklyPathMonth }).buildWeeklyNotePath(
++			year,
++			week,
++		);
++	}
++
++	// a week between two years stays in its own year, whatever the start/end setting is
++	function expectSameFolder(
++		weekCalculation: TSetting["weekCalculation"],
++		path: string,
++		year: number,
++		week: number,
++		folder: RegExp,
++	) {
++		expect(weekly(weekCalculation, path, "start", year, week).filePath).toMatch(folder);
++		expect(weekly(weekCalculation, path, "end", year, week).filePath).toMatch(folder);
++	}
+ 
+-describe("weekly path month choice", () => {
+-	it("detects only month/season tokens before the week token", () => {
+-		const b = createBuilder();
+-		expect(b.weeklyPathNeedsMonthChoice("jYYYY/jMM/[W]ww")).toBe(true);
+-		expect(b.weeklyPathNeedsMonthChoice("jYYYY/jQQQQ/[W]ww")).toBe(true);
+-		expect(b.weeklyPathNeedsMonthChoice("jYYYY/[W]ww/jMM")).toBe(false);
+-		expect(b.weeklyPathNeedsMonthChoice("jYYYY/[Weekly]")).toBe(false);
+-	});
+ 	it("keeps the filename format unchanged", () => {
+ 		const b = createBuilder({ weeklyNotesPath: "jYYYY/jMM/[W]ww" });
+ 		expect(b.buildWeeklyNotePath(1403, 1).fileName).toBe("1403-W1.md");
+ 	});
++
++	it("defaults to the week start", () => {
++		const path = "jYYYY/jMM/[W]ww";
++		const byDefault = createBuilder({ weeklyNotesPath: path }).buildWeeklyNotePath(1403, 9);
++		const start = weekly("jalali-first-week-start", path, "start", 1403, 9);
++		expect(byDefault.filePath).toBe(start.filePath);
++	});
++
++	it("Jalali first-week-start: the last week of a year stays in that year", () => {
++		const calc = getWeekStartCalculator("jalali-first-week-start");
++		expect(calc.getStartOfWeek(1405, 53)).toMatchObject({ jy: 1405, jm: 12 });
++		expect(calc.getEndOfWeek(1405, 53)).toMatchObject({ jy: 1406, jm: 1 });
++
++		expectSameFolder("jalali-first-week-start", "jYYYY/jMM/[W]ww", 1405, 53, /^1405\/12\/W53\//);
++		expect(weekly("jalali-first-week-start", "jYYYY/jMM/[W]ww", "end", 1405, 53).fileName).toBe(
++			"1405-W53.md",
++		);
++		// The same holds for an ordinary year.
++		expectSameFolder("jalali-first-week-start", "jYYYY/jMM/[W]ww", 1403, 52, /^1403\/12\/W52\//);
++	});
++
++	it("Jalali first-day-of-year: week 1 from the previous year goes to the new year", () => {
++		const calc = getWeekStartCalculator("jalali-first-day-of-year");
++		expect(calc.getStartOfWeek(1404, 1)).toMatchObject({ jy: 1403, jm: 12 });
++		expect(calc.getEndOfWeek(1404, 1)).toMatchObject({ jy: 1404, jm: 1 });
++
++		expectSameFolder("jalali-first-day-of-year", "jYYYY/jMM/[W]ww", 1404, 1, /^1404\/01\/W01\//);
++		expectSameFolder("jalali-first-day-of-year", "jYYYY/jMM/[W]ww", 1403, 1, /^1403\/01\/W01\//);
++	});
++
++	it("Gregorian: a week spanning two years is filed under the year in its name", () => {
++		const first = getWeekStartCalculator("gregorian-first-week-start");
++		expect(first.getStartOfWeek(2024, 52)).toMatchObject({ gy: 2024, gm: 12 });
++		expect(first.getEndOfWeek(2024, 52)).toMatchObject({ gy: 2025, gm: 1 });
++		expectSameFolder("gregorian-first-week-start", "YYYY/MM/[W]ww", 2024, 52, /^2024\/12\/W52\//);
++
++		const firstDay = getWeekStartCalculator("gregorian-first-day-of-year");
++		expect(firstDay.getStartOfWeek(2024, 1)).toMatchObject({ gy: 2023, gm: 12 });
++		expect(firstDay.getEndOfWeek(2024, 1)).toMatchObject({ gy: 2024, gm: 1 });
++		expectSameFolder("gregorian-first-day-of-year", "YYYY/MM/[W]ww", 2024, 1, /^2024\/01\/W01\//);
++	});
++
++	it("resolves the season and mixed-calendar tokens from the same date as the year", () => {
++		expectSameFolder("jalali-first-week-start", "jYYYY/jQQ/[W]ww", 1403, 52, /^1403\/04\//);
++		expectSameFolder("jalali-first-day-of-year", "jYYYY/jQQ/[W]ww", 1404, 1, /^1404\/01\//);
++		expectSameFolder("jalali-first-week-start", "jYYYY/MM/[W]ww", 1403, 52, /^1403\/03\//);
++		expectSameFolder("gregorian-first-week-start", "YYYY/jMM/[W]ww", 2024, 52, /^2024\/10\//);
++	});
++
++	it("uses the start/end setting for a week that spans two months of the same year", () => {
++		const jalali = getWeekStartCalculator("jalali-first-week-start");
++		expect(jalali.getStartOfWeek(1403, 9)).toMatchObject({ jy: 1403, jm: 2 });
++		expect(jalali.getEndOfWeek(1403, 9)).toMatchObject({ jy: 1403, jm: 3 });
++		const path = "jYYYY/jMM/[W]ww";
++		const start = weekly("jalali-first-week-start", path, "start", 1403, 9);
++		const end = weekly("jalali-first-week-start", path, "end", 1403, 9);
++		expect(start.filePath).toMatch(/^1403\/02\//);
++		expect(end.filePath).toMatch(/^1403\/03\//);
++
++		const gregorian = getWeekStartCalculator("gregorian-first-week-start");
++		expect(gregorian.getStartOfWeek(2024, 4)).toMatchObject({ gy: 2024, gm: 1 });
++		expect(gregorian.getEndOfWeek(2024, 4)).toMatchObject({ gy: 2024, gm: 2 });
++		const gPath = "YYYY/MM/[W]ww";
++		const gStart = weekly("gregorian-first-week-start", gPath, "start", 2024, 4);
++		const gEnd = weekly("gregorian-first-week-start", gPath, "end", 2024, 4);
++		expect(gStart.filePath).toMatch(/^2024\/01\//);
++		expect(gEnd.filePath).toMatch(/^2024\/02\//);
++	});
++
++	it("gives the same folder for start and end when the week stays within one month", () => {
++		const path = "jYYYY/jMM/[W]ww";
++		const start = weekly("jalali-first-week-start", path, "start", 1403, 10);
++		const end = weekly("jalali-first-week-start", path, "end", 1403, 10);
++		expect(end.filePath).toBe(start.filePath);
++		expect(start.filePath).toMatch(/^1403\/03\/W10\//);
++	});
+ });

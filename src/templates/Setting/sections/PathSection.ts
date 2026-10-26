@@ -7,17 +7,15 @@ export function getPathSettings(): SettingDefinitionItem[] {
 		{
 			type: "group",
 			heading: t("setting.sections.paths"),
-			items: [
-				...NOTE_TYPES.map((noteType) => ({
-					name: t(noteType.pathNameKey),
-					desc: t(noteType.pathDescKey),
-					control: {
-						type: "folder" as const,
-						key: noteType.pathKey,
-						includeRoot: true,
-					},
-				})),
-			],
+			items: NOTE_TYPES.map((noteType) => ({
+				name: t(noteType.pathNameKey),
+				desc: t(noteType.pathDescKey),
+				control: {
+					type: "folder" as const,
+					key: noteType.pathKey,
+					includeRoot: true,
+				},
+			})),
 		},
 	];
 }

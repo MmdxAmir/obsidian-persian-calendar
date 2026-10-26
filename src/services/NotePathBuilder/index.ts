@@ -2,8 +2,6 @@ import { JALALI_MONTHS_NAME, SEASONS_NAME } from "src/constants";
 import type PersianCalendarPlugin from "src/main";
 import type { TDateEngineContext, TLocale } from "src/types";
 import { formatPattern } from "src/utils/dateEngine";
-import { tokenize } from "src/utils/dateEngine/tokenizer";
-import { defaultTokenRegistry } from "src/utils/dateEngine/tokens";
 import {
 	getWeekStartCalculator,
 	gregorianDayOfWeek,
@@ -75,6 +73,21 @@ export default class NotePathBuilder {
 		return resolved ? `${resolved}/${fileName}` : fileName;
 	}
 
+	private getWeeklyAnchor(jy: number, weekNumber: number) {
+		const { weekCalculation, weeklyPathMonth } = this.plugin.setting;
+		const calculator = getWeekStartCalculator(weekCalculation);
+		const start = calculator.getStartOfWeek(jy, weekNumber);
+		const end = calculator.getEndOfWeek(jy, weekNumber);
+		const isGregorian = weekCalculation.startsWith("gregorian");
+		const startYear = isGregorian ? start.gy : start.jy;
+		const endYear = isGregorian ? end.gy : end.jy;
+
+		// a week between two years stays in the year it belongs to
+		if (startYear !== endYear) return startYear === jy ? start : end;
+
+		return weeklyPathMonth === "end" ? end : start;
+	}
+
 	private getDailyWeekContext(jy: number, jm: number, jd: number) {
 		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
 		const date = jalaliToDate(jy, jm, jd);
@@ -128,37 +141,21 @@ export default class NotePathBuilder {
 		return { filePath, dateString };
 	}
 
-	public weeklyPathNeedsMonthChoice(path = this.plugin.setting.weeklyNotesPath): boolean {
-		try {
-			const tokens = tokenize(this.normalizeFolderPath(path), defaultTokenRegistry)
-				.filter((part) => part.type === "token")
-				.map((part) => part.token);
-			const weekIndex = tokens.findIndex((token) => token.field === "week");
-			if (weekIndex <= 0) return false;
-			return tokens.slice(0, weekIndex).some((token) =>
-				["jm", "gm", "season", "quarter"].includes(token.field),
-			);
-		} catch {
-			return false;
-		}
-	}
-
 	public buildWeeklyNotePath(jy: number, weekNumber: number) {
-		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
-		const start = calculator.getStartOfWeek(jy, weekNumber);
-		const end = calculator.getEndOfWeek(jy, weekNumber);
-		const anchor = this.plugin.setting.weeklyPathMonth === "end" ? end : start;
-		const isGregorianWeek = this.plugin.setting.weekCalculation.startsWith("gregorian");
-		const pathContext = this.buildEngineContext({
-			...anchor,
-			...(isGregorianWeek ? { gy: jy } : { jy }),
-			week: weekNumber,
-		});
+		const { jy: jYear, jm, jd, gy, gm, gd } = this.getWeeklyAnchor(jy, weekNumber);
 
 		const fileName = `${toWeekFormat(jy, weekNumber)}.md`;
 
 		const notesLocation = this.plugin.setting.weeklyNotesPath;
-		const filePath = this.buildNotePath(notesLocation, fileName, pathContext);
+		const filePath = this.buildNotePath(notesLocation, fileName, {
+			jy: jYear,
+			jm,
+			jd,
+			gy,
+			gm,
+			gd,
+			week: weekNumber,
+		});
 
 		return { filePath, fileName };
 	}
