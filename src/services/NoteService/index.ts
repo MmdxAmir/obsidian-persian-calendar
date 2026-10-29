@@ -131,6 +131,32 @@ export default class NoteService {
 		}
 	}
 
+	private async triggerTemplaterIfEnabled(file: TFile) {
+		const plugins = (this.app as any).plugins?.plugins;
+		const templater = plugins?.["templater-obsidian"];
+		if (!templater) {
+			return;
+		}
+
+		try {
+			const run =
+				templater.templater?.processFile ??
+				templater.processFile ??
+				templater.templater?.process_template ??
+				templater.process_template;
+
+			if (typeof run !== "function") {
+				return;
+			}
+
+			await run.call(templater, file);
+		} catch (error) {
+			Notice(
+				`Templater execution failed for ${file.path}: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+	}
+
 	private getTemplatePathForNoteType(
 		noteType: "daily" | "weekly" | "monthly" | "seasonal" | "yearly",
 	): string {
@@ -228,6 +254,7 @@ export default class NoteService {
 		if (noteType) {
 			try {
 				await this.applyTemplateIfConfigured(createdFile, noteType);
+				await this.triggerTemplaterIfEnabled(createdFile);
 			} catch (error) {
 				Notice(
 					`The note was created successfully, but applying the template failed.${
