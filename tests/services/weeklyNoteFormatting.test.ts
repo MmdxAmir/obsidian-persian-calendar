@@ -152,7 +152,7 @@ describe.each(modes)("weekly note formatting: %s", (mode) => {
 });
 
 it.each([
-	["jalali-first-day-of-year", [1403, 12, 30], 1403, 1, "Journal/1402/Weekly/1403-W01.md"],
+	["jalali-first-day-of-year", [1403, 12, 30], 1403, 1, "Journal/1403/Weekly/1403-W01.md"],
 	["jalali-first-week-start", [1404, 1, 1], 1403, 52, "Journal/1403/Weekly/1403-W52.md"],
 	["jalali-first-week-start", [1404, 1, 2], 1404, 1, "Journal/1404/Weekly/1404-W01.md"],
 	["gregorian-first-day-of-year", [1403, 10, 11], 2024, 1, "Journal/1402/Weekly/2024-W01.md"],
