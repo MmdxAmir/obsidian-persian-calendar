@@ -122,3 +122,106 @@ describe("NotePathBuilder - mixed-calendar dynamic paths (regression)", () => {
 		);
 	});
 });
+
+describe("NotePathBuilder - weekly note folder month", () => {
+	function weekly(
+		weekCalculation: TSetting["weekCalculation"],
+		weeklyPathMonth: TSetting["weeklyPathMonth"],
+		path: string,
+		year: number,
+		week: number,
+	) {
+		return createBuilder({ weekCalculation, weeklyPathMonth, weeklyNotesPath: path }).buildWeeklyNotePath(
+			year,
+			week,
+		);
+	}
+
+	it("defaults to the start of the week", () => {
+		const path = "jYYYY/jMM/[W]ww";
+		const defaultPath = createBuilder({ weeklyNotesPath: path }).buildWeeklyNotePath(1403, 9);
+		const explicitStart = weekly("jalali-first-week-start", "start", path, 1403, 9);
+		expect(defaultPath.filePath).toBe(explicitStart.filePath);
+	});
+
+	it("selects the start or end month when a Jalali week crosses months within one year", () => {
+		const calculator = getWeekStartCalculator("jalali-first-week-start");
+		expect(calculator.getStartOfWeek(1403, 9)).toMatchObject({ jy: 1403, jm: 2 });
+		expect(calculator.getEndOfWeek(1403, 9)).toMatchObject({ jy: 1403, jm: 3 });
+
+		const path = "jYYYY/jMM/[W]ww";
+		expect(weekly("jalali-first-week-start", "start", path, 1403, 9).filePath).toBe(
+			"1403/02/W09",
+		);
+		expect(weekly("jalali-first-week-start", "end", path, 1403, 9).filePath).toBe(
+			"1403/03/W09",
+		);
+	});
+
+	it("selects the start or end month when a Gregorian week crosses months within one year", () => {
+		const calculator = getWeekStartCalculator("gregorian-first-week-start");
+		expect(calculator.getStartOfWeek(2024, 4)).toMatchObject({ gy: 2024, gm: 1 });
+		expect(calculator.getEndOfWeek(2024, 4)).toMatchObject({ gy: 2024, gm: 2 });
+
+		const path = "YYYY/MM/[W]ww";
+		expect(weekly("gregorian-first-week-start", "start", path, 2024, 4).filePath).toBe(
+			"2024/01/W04",
+		);
+		expect(weekly("gregorian-first-week-start", "end", path, 2024, 4).filePath).toBe(
+			"2024/02/W04",
+		);
+	});
+
+	it("keeps a Jalali first-day-of-year week in its own year while using the selected endpoint month", () => {
+		const calculator = getWeekStartCalculator("jalali-first-day-of-year");
+		expect(calculator.getStartOfWeek(1404, 1)).toMatchObject({ jy: 1403, jm: 12 });
+		expect(calculator.getEndOfWeek(1404, 1)).toMatchObject({ jy: 1404, jm: 1 });
+
+		const path = "jYYYY/jMM/[W]ww";
+		expect(weekly("jalali-first-day-of-year", "start", path, 1404, 1).filePath).toBe(
+			"1404/12/W01",
+		);
+		expect(weekly("jalali-first-day-of-year", "end", path, 1404, 1).filePath).toBe(
+			"1404/01/W01",
+		);
+	});
+
+	it("keeps a Gregorian first-day-of-year week in its own year while using the selected endpoint month", () => {
+		const calculator = getWeekStartCalculator("gregorian-first-day-of-year");
+		expect(calculator.getStartOfWeek(2024, 1)).toMatchObject({ gy: 2023, gm: 12 });
+		expect(calculator.getEndOfWeek(2024, 1)).toMatchObject({ gy: 2024, gm: 1 });
+
+		const path = "YYYY/MM/[W]ww";
+		expect(weekly("gregorian-first-day-of-year", "start", path, 2024, 1).filePath).toBe(
+			"2024/12/W01",
+		);
+		expect(weekly("gregorian-first-day-of-year", "end", path, 2024, 1).filePath).toBe(
+			"2024/01/W01",
+		);
+	});
+
+	it("allows the final full Jalali week to use the next year's month without changing its week year", () => {
+		const calculator = getWeekStartCalculator("jalali-first-week-start");
+		expect(calculator.getStartOfWeek(1405, 53)).toMatchObject({ jy: 1405, jm: 12 });
+		expect(calculator.getEndOfWeek(1405, 53)).toMatchObject({ jy: 1406, jm: 1 });
+
+		const path = "jYYYY/jMM/[W]ww";
+		expect(weekly("jalali-first-week-start", "start", path, 1405, 53).filePath).toBe(
+			"1405/12/W53",
+		);
+		expect(weekly("jalali-first-week-start", "end", path, 1405, 53).filePath).toBe(
+			"1405/01/W53",
+		);
+	});
+
+	it("keeps the selected calendar's week year while deriving the other calendar's date fields from the endpoint", () => {
+		const jalaliPath = "jYYYY/YYYY/jMM";
+		const jalaliEnd = weekly("jalali-first-day-of-year", "end", jalaliPath, 1404, 1);
+		expect(jalaliEnd.filePath).toMatch(/^1404\/2025\/01$/);
+
+		const gregorianPath = "YYYY/jYYYY/MM";
+		const gregorianEnd = weekly("gregorian-first-day-of-year", "end", gregorianPath, 2024, 1);
+		expect(gregorianEnd.filePath).toMatch(/^2024\/1402\/01$/);
+	});
+});
+
