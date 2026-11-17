@@ -173,6 +173,31 @@ describe("NotePathBuilder - weekly note folder month", () => {
 		);
 	});
 
+
+	it("does not move the first full week across a year boundary", () => {
+		const jalali = getWeekStartCalculator("jalali-first-week-start");
+		expect(jalali.getStartOfWeek(1404, 1).jy).toBe(1404);
+		expect(jalali.getEndOfWeek(1404, 1).jy).toBe(1404);
+
+		const gregorian = getWeekStartCalculator("gregorian-first-week-start");
+		expect(gregorian.getStartOfWeek(2024, 1).gy).toBe(2024);
+		expect(gregorian.getEndOfWeek(2024, 1).gy).toBe(2024);
+	});
+
+	it("keeps a Gregorian final full week in its own year while selecting the endpoint month", () => {
+		const calculator = getWeekStartCalculator("gregorian-first-week-start");
+		expect(calculator.getStartOfWeek(2024, 52)).toMatchObject({ gy: 2024, gm: 12 });
+		expect(calculator.getEndOfWeek(2024, 52)).toMatchObject({ gy: 2025, gm: 1 });
+
+		const path = "YYYY/MM/[W]ww";
+		expect(weekly("gregorian-first-week-start", "start", path, 2024, 52).filePath).toBe(
+			"2024/12/W52/2024-W52.md",
+		);
+		expect(weekly("gregorian-first-week-start", "end", path, 2024, 52).filePath).toBe(
+			"2024/01/W52/2024-W52.md",
+		);
+	});
+
 	it("keeps a Jalali first-day-of-year week in its own year while using the selected endpoint month", () => {
 		const calculator = getWeekStartCalculator("jalali-first-day-of-year");
 		expect(calculator.getStartOfWeek(1404, 1)).toMatchObject({ jy: 1403, jm: 12 });
