@@ -24,6 +24,8 @@ export type THijri = {
 
 export type TWeekStart = "sat" | "sun" | "mon";
 
+export type TWeeklyPathMonth = "start" | "end";
+
 export type TWeekCalculationMode =
 	| "jalali-first-day-of-year"
 	| "jalali-first-week-start"
@@ -92,6 +94,7 @@ export type TSetting = {
 	yearlyNoteNaming: TDateFormatWithoutHijri;
 	dailyNoteFormat: string;
 	weekCalculation: TWeekCalculationMode;
+	weeklyPathMonth: TWeeklyPathMonth;
 	showSeasonalNotes: boolean;
 	// show holidays
 	showHolidays: boolean;
