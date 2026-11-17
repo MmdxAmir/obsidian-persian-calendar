@@ -218,11 +218,11 @@ describe("NotePathBuilder - weekly note folder month", () => {
 	it("keeps the selected calendar's week year while deriving the other calendar's date fields from the endpoint", () => {
 		const jalaliPath = "jYYYY/YYYY/jMM";
 		const jalaliEnd = weekly("jalali-first-day-of-year", "end", jalaliPath, 1404, 1);
-		expect(jalaliEnd.filePath).toMatch(/^1404\/2025\/01$/);
+		expect(jalaliEnd.filePath).toMatch(/^1404\/2025\/01\/1404-W1\.md$/);
 
 		const gregorianPath = "YYYY/jYYYY/MM";
 		const gregorianEnd = weekly("gregorian-first-day-of-year", "end", gregorianPath, 2024, 1);
-		expect(gregorianEnd.filePath).toMatch(/^2024\/1402\/01$/);
+		expect(gregorianEnd.filePath).toMatch(/^2024\/1402\/01\/2024-W1\.md$/);
 	});
 });
 
