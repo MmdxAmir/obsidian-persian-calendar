@@ -73,9 +73,17 @@ export default class NotePathBuilder {
 		return resolved ? `${resolved}/${fileName}` : fileName;
 	}
 
+	private usesGregorianWeeks() {
+		return this.plugin.setting.weekCalculation.startsWith("gregorian");
+	}
+
 	private getWeeklyAnchor(jy: number, weekNumber: number) {
-		const calculator = getWeekStartCalculator(this.plugin.setting.weekCalculation);
-		return calculator.getStartOfWeek(jy, weekNumber);
+		const { weekCalculation, weeklyPathMonth } = this.plugin.setting;
+		const calculator = getWeekStartCalculator(weekCalculation);
+
+		return weeklyPathMonth === "end"
+			? calculator.getEndOfWeek(jy, weekNumber)
+			: calculator.getStartOfWeek(jy, weekNumber);
 	}
 
 	public buildDailyNoteFileName(jy: number, jm: number, jd: number) {
@@ -116,20 +124,14 @@ export default class NotePathBuilder {
 	}
 
 	public buildWeeklyNotePath(jy: number, weekNumber: number) {
-		const { jy: jYear, jm, jd, gy, gm, gd } = this.getWeeklyAnchor(jy, weekNumber);
-
+		const anchor = this.getWeeklyAnchor(jy, weekNumber);
 		const fileName = `${toWeekFormat(jy, weekNumber)}.md`;
 
 		const notesLocation = this.plugin.setting.weeklyNotesPath;
-		const filePath = this.buildNotePath(notesLocation, fileName, {
-			jy: jYear,
-			jm,
-			jd,
-			gy,
-			gm,
-			gd,
-			week: weekNumber,
-		});
+		const context: TDateEngineContext = this.usesGregorianWeeks()
+			? { ...anchor, gy: jy, week: weekNumber }
+			: { ...anchor, jy, week: weekNumber };
+		const filePath = this.buildNotePath(notesLocation, fileName, context);
 
 		return { filePath, fileName };
 	}
