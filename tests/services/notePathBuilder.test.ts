@@ -152,10 +152,10 @@ describe("NotePathBuilder - weekly note folder month", () => {
 
 		const path = "jYYYY/jMM/[W]ww";
 		expect(weekly("jalali-first-week-start", "start", path, 1403, 9).filePath).toBe(
-			"1403/02/W09/1403-W9.md",
+			"1403/02/W09/1403-W09.md",
 		);
 		expect(weekly("jalali-first-week-start", "end", path, 1403, 9).filePath).toBe(
-			"1403/03/W09/1403-W9.md",
+			"1403/03/W09/1403-W09.md",
 		);
 	});
 
@@ -166,10 +166,10 @@ describe("NotePathBuilder - weekly note folder month", () => {
 
 		const path = "YYYY/MM/[W]ww";
 		expect(weekly("gregorian-first-week-start", "start", path, 2024, 4).filePath).toBe(
-			"2024/01/W04/2024-W4.md",
+			"2024/01/W04/2024-W04.md",
 		);
 		expect(weekly("gregorian-first-week-start", "end", path, 2024, 4).filePath).toBe(
-			"2024/02/W04/2024-W4.md",
+			"2024/02/W04/2024-W04.md",
 		);
 	});
 
@@ -205,10 +205,10 @@ describe("NotePathBuilder - weekly note folder month", () => {
 
 		const path = "jYYYY/jMM/[W]ww";
 		expect(weekly("jalali-first-day-of-year", "start", path, 1404, 1).filePath).toBe(
-			"1404/12/W01/1404-W1.md",
+			"1404/12/W01/1404-W01.md",
 		);
 		expect(weekly("jalali-first-day-of-year", "end", path, 1404, 1).filePath).toBe(
-			"1404/01/W01/1404-W1.md",
+			"1404/01/W01/1404-W01.md",
 		);
 	});
 
@@ -219,10 +219,10 @@ describe("NotePathBuilder - weekly note folder month", () => {
 
 		const path = "YYYY/MM/[W]ww";
 		expect(weekly("gregorian-first-day-of-year", "start", path, 2024, 1).filePath).toBe(
-			"2024/12/W01/2024-W1.md",
+			"2024/12/W01/2024-W01.md",
 		);
 		expect(weekly("gregorian-first-day-of-year", "end", path, 2024, 1).filePath).toBe(
-			"2024/01/W01/2024-W1.md",
+			"2024/01/W01/2024-W01.md",
 		);
 	});
 
